@@ -1,0 +1,55 @@
+---
+title: UML diagrams for Cap1
+author: Capstone Team
+date: last-modified
+format:
+    gfm:
+        mermaid-format: png
+---
+
+::: {.column}
+```{mermaid}
+%%| echo: true
+%%| eval: false
+erDiagram
+ User ||--|{ Card : "Uses"
+    Card ||--|{ Transaction: "Executes"
+    Transaction }|--|| Merchant: "Processed by"
+    Merchant ||--|{ Location: "Has"
+    Card {
+        primary_key cID
+		string Card_Number
+        date Expiration
+    }
+    User {
+        primary_key uID
+        string Full_Name
+    }
+    Transaction {
+        primary_key tID
+        foreign_key mID
+        foreign_key cID
+        int year
+        string Card_Number
+        string Full_Name
+        date Date_Of_Transaction
+        int hour
+        int minute
+        float amount
+        string use_chip
+    }
+    Merchant{
+        primary_key mID
+        string website
+        int MCC
+    }
+    Location {
+        primary_key lID 
+        Int longitude
+        Int latitude
+        Int zip
+        string city
+        string state
+    }
+```
+:::

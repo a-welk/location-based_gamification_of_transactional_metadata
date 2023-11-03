@@ -36,7 +36,9 @@ class GenerateCardsJson:
         json_file = open("cards.json", "w")
         json.dump(cards, json_file)
 
+#Class to  add card numbers and geo tags (long, lat)
 class AddCardNumbers():
+    # function for get longitude and latitude data from zip codes
     def get_lat_lon_from_zip(self, zip_code):
         nomi = pgeocode.Nominatim('us')
         query = nomi.query_postal_code(zip_code)
@@ -46,6 +48,7 @@ class AddCardNumbers():
         }
         return data['lat'], data['lon']
     
+    #function to add the card numbers from the user and card csv
     def addCardNumber(self, transactions):
         print("Adding Card Numbers")
         total_rows = len(transactions)
@@ -64,6 +67,7 @@ class AddCardNumbers():
         transactions.insert(14, column="Latitude", value=0)
         transactions.insert(15, column="Longitude", value=0)
         id_count = 0
+        # 
         for index, row in transactions.iterrows():
             user = row['User']
             card_index = row['Card']
@@ -71,8 +75,6 @@ class AddCardNumbers():
             card_number = 0
             if len(card_data) > 1:
                 card_number = card_data[4]
-            else:
-                card_number = 0
             card_number_data.append(card_number)
             transaction_id.append(id_count)
             id_count += 1

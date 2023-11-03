@@ -129,7 +129,6 @@ class AddCardNumbers():
 # method to manipulate the card numbers to match the specific user and indexed card number for each row
     def readjust_card_nums(transactions):
         num = pd.read_csv("sd254_cards.csv")
-        j = 'Card'
         # merging of the two data frames on the matching columns 'User' (user id) and 'Card Index' (their 1st, 2nd, 3rd, ... etc. card)
         merged_data = pd.merge(transactions, num, on=['User', 'CARD INDEX'], how='left')
         print(merged_data)

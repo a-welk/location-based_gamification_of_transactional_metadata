@@ -109,6 +109,7 @@ class AddCardNumbers():
         #transactions_file = open("Transactions.csv", "w")
         #transactions.to_csv(transactions_file, index=False)
 
+# method to add names to the final csv file of all current mock transactions
     def add_name(self, transactions):
         names = pd.read_csv(self)
         for index, row in transactions.iterrows():
@@ -116,23 +117,27 @@ class AddCardNumbers():
             id = transactions['User']
             transactions['Person'][row] = name[id]
         return transactions
-    
+
+# method to readjust the users and add a bit of variety in the mock dataset from users
     def readjust_users(transactions):
         seed(1)
         for index, row in transactions.iterrows():
             id = randint(0, 1999, 19963) 
             transactions['User'] = id
         return transactions   
-    
+        
+# method to manipulate the card numbers to match the specific user and indexed card number for each row
     def readjust_card_nums(transactions):
         num = pd.read_csv("sd254_cards.csv")
         j = 'Card'
+        # merging of the two data frames on the matching columns 'User' (user id) and 'Card Index' (their 1st, 2nd, 3rd, ... etc. card)
         merged_data = pd.merge(transactions, num, on=['User', 'CARD INDEX'], how='left')
         print(merged_data)
-    # Update the 'Card Number' column in 'transactions' with the values from 'card_data'
+    # Update the 'Card Number' column in 'transactions' with the values from 'card_data' matching the columns that were merged on
         transactions['Card Number'] = merged_data['Card Number_y']
         return transactions
-
+        
+#method to readjust the names in the final csv file to match those in the user id column
     def readjust_names(transactions):
         name = pd.read_csv("sd254_users.csv")
         count = 0
@@ -143,7 +148,9 @@ class AddCardNumbers():
             transactions['Person'][count] = ro['Person']
             count +=1
         return transactions 
-        
+
+# while working to reach the final output I used each method one by one so all the methods are not present in this main method
+# I would be happy to hop on a call to discuss what I did to achieve the final csv
 if __name__ == "__main__":
     if not(os.path.exists("cards.json")):
         GenerateCardsJsonFile = GenerateCardsJson()

@@ -9,7 +9,12 @@
   top: 0px;
   left: 0px;
   width: 100%;
-  height: 60px;
+  height: 70px;
+}
+
+.logo {
+  width: 90px;
+  height: 50px;
 }
 
 .hamburger {
@@ -20,17 +25,19 @@
 }
 
 @media screen and (max-width: 768px) {
-  .navbar {
+  .navBar {
     min-height: 50px;
   }
 
   .hamburger {
     display: flex;
     cursor: pointer;
+    margin-right: 30px;
   }
 
-  .hamburger #closeHam {
+  .hamburger #closeHamburger {
     display: none;
+    margin-right: 30px;
   }
 
   .navItems {
@@ -40,7 +47,6 @@
     position: absolute;
     right: 0;
     top: 58px;
-    background-color: rgb(73, 51, 153);
     width: 100%;
     height: calc(100vh - 58px);
     padding-top: 60px;

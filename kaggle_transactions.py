@@ -9,9 +9,6 @@ import os.path
 import pandas as pd
 import json
 import pgeocode
-import numpy as np
-from numpy.random import seed
-from numpy.random import randint
 
 # Convert cards csv file to json file to be later loaded in as dictionary
 class GenerateCardsJson:
@@ -39,9 +36,7 @@ class GenerateCardsJson:
         json_file = open("cards.json", "w")
         json.dump(cards, json_file)
 
-#Class to  add card numbers and geo tags (long, lat)
 class AddCardNumbers():
-    # function for get longitude and latitude data from zip codes
     def get_lat_lon_from_zip(self, zip_code):
         nomi = pgeocode.Nominatim('us')
         query = nomi.query_postal_code(zip_code)
@@ -51,7 +46,6 @@ class AddCardNumbers():
         }
         return data['lat'], data['lon']
     
-    #function to add the card numbers from the user and card csv
     def addCardNumber(self, transactions):
         print("Adding Card Numbers")
         total_rows = len(transactions)
@@ -59,18 +53,19 @@ class AddCardNumbers():
         cards_file = open("cards.json", "r")
         cards = json.load(cards_file)
         users_file = pd.read_csv("sd254_users.csv")
+        MerchantLocationIDFile = "MerchantLocationID.json"
+        merchantLocIdFile = open(MerchantLocationIDFile, "r")
+        merchantLocIdJson = json.load(merchantLocIdFile)
         transactions.insert(3, column="Card Number", value=0)
         person_values = []
-        latitudeData = []
-        longitudeData = []
+        merchantLocIDData = []
         transaction_id = []
         card_number_data = []
         transactions.insert(0, column="Transaction ID", value=0)
         transactions.insert(2, column="Person", value=0)
-        transactions.insert(14, column="Latitude", value=0)
-        transactions.insert(15, column="Longitude", value=0)
+        transactions.insert(14, column="MerchantLocationID", value=0)
+
         id_count = 0
-        # 
         for index, row in transactions.iterrows():
             user = row['User']
             card_index = row['Card']
@@ -78,6 +73,8 @@ class AddCardNumbers():
             card_number = 0
             if len(card_data) > 1:
                 card_number = card_data[4]
+            else:
+                card_number = 0
             card_number_data.append(card_number)
             transaction_id.append(id_count)
             id_count += 1
@@ -88,76 +85,30 @@ class AddCardNumbers():
             current_row += 1
             percentage_complete = (current_row / total_rows) * 100
             print(f'\r{percentage_complete:.2f}% complete', end='', flush=True)
-            zipcode = row['Zip']
-            if pd.notna(zipcode):
-                zipcode = int(zipcode)
-                AddCoordinatesTransactions = AddCardNumbers()
-                longitude, latitude = AddCoordinatesTransactions.get_lat_lon_from_zip(zipcode)
-            else:
-                longitude = 0
-                latitude = 0
-            latitudeData.append(latitude)
-            longitudeData.append(longitude)
+
+            merchantName = str(row['Merchant Name'])
+            merchantLocID = merchantLocIdJson.get(merchantName, "")
+            if merchantLocID == "":
+                print(f'{merchantName} location id can\'t be found in {MerchantLocationIDFile}')
+            merchantLocIDData.append(merchantLocID)
         transactions['Transaction ID'] = transaction_id
         transactions['Person'] = person_values
         transactions['Card Number'] = card_number_data
-        transactions['Latitude'] = latitudeData
-        transactions['Longitude'] = longitudeData
+        transactions['LocationID'] = merchantLocIDData
         print()
         transactions.head()
         return transactions
         #transactions_file = open("Transactions.csv", "w")
         #transactions.to_csv(transactions_file, index=False)
 
-# method to add names to the final csv file of all current mock transactions
-    def add_name(self, transactions):
-        names = pd.read_csv(self)
-        for index, row in transactions.iterrows():
-            name = names['Person']
-            id = transactions['User']
-            transactions['Person'][row] = name[id]
-        return transactions
 
-# method to readjust the users and add a bit of variety in the mock dataset from users
-    def readjust_users(transactions):
-        seed(1)
-        for index, row in transactions.iterrows():
-            id = randint(0, 1999, 19963) 
-            transactions['User'] = id
-        return transactions   
-        
-# method to manipulate the card numbers to match the specific user and indexed card number for each row
-    def readjust_card_nums(transactions):
-        num = pd.read_csv("sd254_cards.csv")
-        # merging of the two data frames on the matching columns 'User' (user id) and 'Card Index' (their 1st, 2nd, 3rd, ... etc. card)
-        merged_data = pd.merge(transactions, num, on=['User', 'CARD INDEX'], how='left')
-        print(merged_data)
-    # Update the 'Card Number' column in 'transactions' with the values from 'card_data' matching the columns that were merged on
-        transactions['Card Number'] = merged_data['Card Number_y']
-        return transactions
-        
-#method to readjust the names in the final csv file to match those in the user id column
-    def readjust_names(transactions):
-        name = pd.read_csv("sd254_users.csv")
-        count = 0
-        for index, row in transactions.iterrows():
-            user_value = row['User']
-            print(user_value)
-            ro = name.iloc[user_value]
-            transactions['Person'][count] = ro['Person']
-            count +=1
-        return transactions 
-
-# while working to reach the final output I used each method one by one so all the methods are not present in this main method
-# I would be happy to hop on a call to discuss what I did to achieve the final csv
 if __name__ == "__main__":
     if not(os.path.exists("cards.json")):
         GenerateCardsJsonFile = GenerateCardsJson()
         GenerateCardsJsonFile.generateCardsJsonFile()
-    transactions = pd.read_csv("Transactions_final.csv")
-    #AddCardNumbersToTable = AddCardNumbers()
-    #transactions.rename(columns={'CARD_INDEX': 'CARD INDEX'}, inplace=True)
-    transactions = AddCardNumbers.readjust_names(transactions)
+    transactions = pd.read_csv("User0_credit_card_transactions.csv")
+    AddCardNumbersToTable = AddCardNumbers()
+    transactions = AddCardNumbersToTable.addCardNumber(transactions)
     print("Done")
     # AddPersonsNameToTable = AddPersonsName()
     # transactions = AddPersonsNameToTable.addNames(transactions)
@@ -165,5 +116,5 @@ if __name__ == "__main__":
     # AddCoordinatesToTable = AddCoordinates()
     # transactions = AddCoordinatesToTable.main(transactions)
     # print("Done Adding Coordinates")
-    transactions.to_csv("Transactions_final.csv", index=False)
+    transactions.to_csv("Transactions_Partial.csv", index=False)
     

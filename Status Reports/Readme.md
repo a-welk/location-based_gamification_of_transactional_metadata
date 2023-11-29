@@ -20,7 +20,7 @@ Status Report Template: https://github.com/VCU-CS-Capstone/0000---Capstone-Templ
 | Week 8 Status Report |Research AWS technologies, decide on what would best work for our usecase|Researched AWS techs| |
 | Week 9 Status Report |Setup AWS IAM roles for user sign ins|Continue research on how AWS techs work together| |
 | Week 10 Status Report |Start figma wireframe for frontend|Finished figma, final decision on what techs to use| |
-| Week 11 Status Report | | | |
+| Week 11 Status Report |Write scripts to process the dataset|Setup AWS DynamoDB| |
 | Week 12 Status Report | | | |
 | Week 13 Status Report | | | |
 | Week 14 Status Report | | | |

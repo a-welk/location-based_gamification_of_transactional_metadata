@@ -28,23 +28,27 @@ def query_user_login(email, password):
         return False
     
 def get_user_transaction(UserID):
-    table = dynamodb.Table('Transactions')
+    table = dynamodb.Table('Transactions-temp')
     response = table.query(
-        KeyConditionExpression = Key('User ID').eq(UserID)
+        KeyConditionExpression = Key('User').eq(UserID)
     )
     items = response['Items']
+    print(items)
+
     for item in items: 
-        userTransactions = items['Transaction ID']
-        transactionYear = items['Year']
-        transactionMonth = items['Month']
-        transactionDay = items['Day']
-        transactionTime = items['Time']
-        transactionAmount = items['Amount']
-        transactionMerchantID = items['Merchant Name']
-        transctionMCC = items['MCC']
+        userTransactions = items[0]['Transaction ID']
+        transactionYear = items[0]['Year']
+        transactionMonth = items[0]['Month']
+        transactionDay = items[0]['Day']
+        transactionTime = items[0]['Time']
+        transactionAmount = items[0]['Amount']
+        transactionMerchantID = items[0]['Merchant Name']
+        transctionMCC = items[0]['MCC']
+
         
 def main():
-    query_user_login("Leighton.Sullivan@gmail.com", "LeightonSullivan123")
+    query_user_login("Leighton.Sullivan@gmail.com", "LeightonSullivan123") ##just a sample login
+    get_user_transaction(0)
     
     
 if __name__=="__main__":

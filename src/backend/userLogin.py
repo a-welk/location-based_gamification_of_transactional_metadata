@@ -27,13 +27,34 @@ def query_user_login(email, password):
         print("Invalid user login credentials")
         return False
     
+    
 def get_user_transaction(UserID):
     table = dynamodb.Table('Transactions-temp')
     response = table.query(
+        IndexName = 'User-index',
         KeyConditionExpression = Key('User').eq(UserID)
     )
     items = response['Items']
-    print(items)
+    print(items) ##printing an empty list so something is probably wrong with the original query but idk what
+    
+    
+    ##attempt at pagination in order to retrieve ALL the transactions from designated user
+    got_items = []
+    paginator = dynamodb.meta.client.get_paginator('query')
+    for page in paginator.paginate(TableName='Transactions-temp',
+                                   IndexName = 'User-index',
+                                   KeyConditionExpression= Key('User').eq(UserID)):
+                                        got_items += page['Items']
+                                        print(page['Items'])
+                                        print("HI")
+                
+    ##different approach to pagination, neither work however this one doesnt even loop through once to print the Hello!
+    """
+    while 'LastEvaulatedKey' in response:
+        reponse = table.query(ExclusiveStartKey=response['LastEvaluatedKey'])
+        items.update(response['Items'])
+        print("Hello!")
+
 
     for item in items: 
         userTransactions = items[0]['Transaction ID']
@@ -44,10 +65,10 @@ def get_user_transaction(UserID):
         transactionAmount = items[0]['Amount']
         transactionMerchantID = items[0]['Merchant Name']
         transctionMCC = items[0]['MCC']
-
+        """
         
 def main():
-    query_user_login("Leighton.Sullivan@gmail.com", "LeightonSullivan123") ##just a sample login
+    query_user_login("Kiera.Allen@gmail.com", "KieraAllen123") ##just a sample login
     get_user_transaction(0)
     
     

@@ -1,8 +1,9 @@
 import boto3
-
+from boto3.dynamodb.conditions import Key
 dynamodb = boto3.resource('dynamodb',
-                          aws_access_key_id=AKIA42KZIHZETGWRGQGV,
-                          aws_secret_access_key=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)
+                          aws_access_key_id="AKIA42KZIHZETGWRGQGV",
+                          aws_secret_access_key="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",
+                          region_name="us-east-1")
 
 def __init__(self, dyn_resource):
     self.dyn_resource = dyn_resource
@@ -14,7 +15,8 @@ def query_user_login(email, password):
     
     table = dynamodb.Table('Users')
     response = table.query(
-        KeyConditionExpression = Key('email').eq(email)
+        IndexName = 'Email-index',
+        KeyConditionExpression = Key('Email').eq(email)
     )
     items = response['Items']
     UserID = items[0]['User ID']
@@ -40,3 +42,10 @@ def get_user_transaction(UserID):
         transactionAmount = items['Amount']
         transactionMerchantID = items['Merchant Name']
         transctionMCC = items['MCC']
+        
+def main():
+    query_user_login("Leighton.Sullivan@gmail.com", "LeightonSullivan123")
+    
+    
+if __name__=="__main__":
+    main()

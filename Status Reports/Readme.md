@@ -20,12 +20,12 @@ Status Report Template: https://github.com/VCU-CS-Capstone/0000---Capstone-Templ
 | Week 8 Status Report |Research AWS technologies, decide on what would best work for our usecase|Researched AWS techs| |
 | Week 9 Status Report |Setup AWS IAM roles for user sign ins|Continue research on how AWS techs work together| |
 | Week 10 Status Report |Start figma wireframe for frontend|Finished figma, final decision on what techs to use| |
-| Week 11 Status Report |Write scripts to process the dataset|Setup AWS DynamoDB| |
-| Week 12 Status Report | | | |
-| Week 13 Status Report | | | |
-| Week 14 Status Report | | | |
-| Week 15 Status Report | | | |
-| Week 16 Status Report | | | |
+| Week 11 Status Report |Write scripts to process the dataset of Users|Setup AWS DynamoDB| |
+| Week 12 Status Report |Write script to add email and passwords to each user|Users now have emails and passwords||
+| Week 13 Status Report |Develop hashing algorithm for passwords|Hashed passwords and stored in DynamoDB| |
+| Week 14 Status Report |Develop script to add transaction ID to our new transactions table|Transactions table added to DynamoDB| |
+| Week 15 Status Report |Develop functions to verify user login and get transactions based on user login|User login verification setup correctly|Need to figure out how to retrieve transactions of logged in user based on userID|
+| Week 16 Status Report |Figure out why get transactions function does not work properly| | |
 
 ## 2nd Semester
 

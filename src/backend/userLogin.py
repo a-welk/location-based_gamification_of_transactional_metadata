@@ -1,5 +1,5 @@
 import boto3
-from boto3.dynamodb.conditions import Key
+from boto3.dynamodb.conditions import Key, Attr
 dynamodb = boto3.resource('dynamodb',
                           aws_access_key_id="AKIA42KZIHZETGWRGQGV",
                           aws_secret_access_key="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",
@@ -36,6 +36,15 @@ def get_user_transaction(UserID):
     )
     items = response['Items']
     print(items) ##printing an empty list so something is probably wrong with the original query but idk what
+    
+    
+    table = dynamodb.Table('Transactions-temp')
+    response = table.query(
+        KeyConditionExpression = Key('Transaction ID').eq(15886)
+    )
+    items = response['Items']
+    print(items)
+    
     
     
     ##attempt at pagination in order to retrieve ALL the transactions from designated user

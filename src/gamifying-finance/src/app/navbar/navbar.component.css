@@ -1,0 +1,96 @@
+@import url('https://fonts.googleapis.com/css2?family=Jost:wght@400;700&display=swap');
+
+.navBar {
+  display: flex;
+  position: absolute;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #004977;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  height: 70px;
+}
+
+.logo {
+  width: 40px;
+  height: 40px;
+}
+
+.hamburger {
+  display: none;
+  font-size: 20px;
+  font-weight: 800;
+  color: white;
+}
+
+@media screen and (max-width: 768px) {
+  .navBar {
+    min-height: 50px;
+  }
+
+  .hamburger {
+    display: flex;
+    cursor: pointer;
+    margin-right: 30px;
+  }
+
+  .hamburger #closeHamburger {
+    display: none;
+    margin-right: 30px;
+  }
+
+  .navItems {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    position: absolute;
+    right: 0;
+    top: 58px;
+    width: 100%;
+    height: calc(100vh - 58px);
+    color:black;
+    padding-top: 60px;
+    gap: 10vh;
+  }
+}
+
+.navLogo {
+  display: flex-start;
+  margin-right: 40px;
+}
+
+.navItems {
+  display: flex-end;
+  display: flex;
+  gap: 40px;
+  margin-right: 40px;
+}
+
+.navItems > a {
+  color: #E5FCFF;
+  font-weight: bold;
+  text-decoration: none;
+  display: inline-block;
+  position: relative;
+  font-family: 'Jost', sans-serif;
+}
+
+.navItems > a:hover::after {
+  transform: scaleX(1);
+  transform-origin: bottom left;
+}
+
+.navItems > a::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  transform: scaleX(0);
+  height: 3px;
+  bottom: -2px;
+  left: 0px;
+  background-color:#E5FCFF;
+  transform-origin: bottom right;
+  transition: transform 0.25s ease-out;
+}
+

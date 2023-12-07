@@ -1,0 +1,21 @@
+.loginButton {
+    display: inherit;
+    gap: 40px;
+    margin-right: 20px;
+}
+
+
+  .loginButton {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #0066cc;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 20px; 
+}
+
+.loginButton:hover {
+    background-color: #45a049;
+}

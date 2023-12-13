@@ -1,4 +1,5 @@
 import boto3
+import flask_cors
 from flask import Flask, request
 from boto3.dynamodb.conditions import Key, Attr
 
@@ -8,6 +9,7 @@ dynamodb = boto3.resource('dynamodb',
                           region_name="us-east-1")
 
 app = Flask(__name__)
+flask_cors.CORS(app)
 
 # Global Transaction table variables
 transactionID = [] 

@@ -1,1 +1,3 @@
 Werkzeug==2.2.2
+boto3==1.33.8
+Flask>=2.2.2

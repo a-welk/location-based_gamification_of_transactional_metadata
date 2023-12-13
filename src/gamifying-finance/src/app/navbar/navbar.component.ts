@@ -16,16 +16,13 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
     RouterOutlet,
     RouterLink,
     RouterLinkActive,
+
   ],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css'
 })
 export class NavbarComponent implements OnInit {
-  isCollapsed : boolean = true;
 
-  toggleCollapse() {
-    this.isCollapsed = !this.isCollapsed;
-  }
 
   ngOnInit() {
 

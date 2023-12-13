@@ -1,23 +1,13 @@
-<div>
-  <p>helo</p>
-  <p>helo</p>
+<div class="container">
+  <h2>Login</h2>
+  <form (ngSubmit)="login()">
+    <label for="email">Email:</label>
+    <input type="text" id="email" name="email" [(ngModel)]="email" required>
 
-  <p>helo</p>
+    <label for="password">Password:</label>
+    <input type="password" id="password" name="password" [(ngModel)]="password" required>
 
-  <p>helo</p>
-  <p>helo</p>
-
-  <p>helo</p>
-  <p>helo</p>
-  <p>helo</p>
-  <p>helo</p>
-  <p>helo</p>
-  <p>helo</p>
-  <p>helo</p>
-  <p>helo</p>
-  <p>helo</p>
-  <p>helo</p>
-  <p>helo</p>
-
+    <button type="submit">Login</button>
+  </form>
 </div>
-<router-outlet></router-outlet>
+

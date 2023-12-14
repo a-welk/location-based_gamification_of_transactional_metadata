@@ -97,7 +97,7 @@ def add_transaction():
         return jsonify({"status": "success", "message": "Transaction added successfully"})
     #error handling
     except Exception as E:
-        return jsonify9({"status": "error", "message": str(E)})
+        return jsonify({"status": "error", "message": str(E)})
 
 def main():
     UserID = query_user_login("Kiera.Allen@gmail.com", "KieraAllen123") ##just a sample login

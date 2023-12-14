@@ -83,7 +83,8 @@ def get_user_transaction(UserID):
                                         
 def check_budget(UserID): 
     get_user_transaction(UserID)
-    
+  
+@app.route('/add_transaction', methods=['POST'])
 def add_transaction():
     #reference to dynamodb
     table = dynamodb.Table('Transactions')

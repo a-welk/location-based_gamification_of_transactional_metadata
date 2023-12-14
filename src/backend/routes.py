@@ -84,7 +84,20 @@ def get_user_transaction(UserID):
 def check_budget(UserID): 
     get_user_transaction(UserID)
     
-        
+def add_transaction():
+    #reference to dynamodb
+    table = dynamodb.Table('Transactions')
+    try: 
+        #getting transaction payload
+        transactions_data = request.get_json()
+        #adding transaction to dynamodb
+        table.append(transactions_data)
+        #print message of completition for testing
+        return jsonify({"status": "success", "message": "Transaction added successfully"})
+    #error handling
+    except Exception as E:
+        return jsonify9({"status": "error", "message": str(E)})
+
 def main():
     UserID = query_user_login("Kiera.Allen@gmail.com", "KieraAllen123") ##just a sample login
     get_user_transaction(str(UserID))

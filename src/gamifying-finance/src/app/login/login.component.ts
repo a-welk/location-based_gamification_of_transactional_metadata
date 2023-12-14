@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DatabaseService } from '../database.service';
+import { HttpService } from '../services/http.service';
 import { FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-login',
@@ -16,22 +17,31 @@ import { FormsModule } from '@angular/forms';
 export class LoginComponent {
   email: string = '';
   password: string = '';
+  subscription!: Subscription;
+  subscriptionManager = [];
 
-  constructor(private databaseService: DatabaseService) {}
+  constructor(private http: HttpService) {}
+
+  ngOnInit(): void {
+    // this.subscriptionManager.push(
+    //   this.subscription.
+    // )
+
+  }
+
+  ngOnDestroy(): void {
+
+
+  }
 
   login() {
-    
-  }
-  // login() {
-  //   this.databaseService.login(this.email, this.password).subscribe({
-  //     next: (response) => {
-  //       // Handle successful login (navigate to another page, display a message, etc.)
+  //   this.http.getLogin(this.email, this.password).subscribe(
+  //     (response) => {
   //       console.log('Login successful:', response);
   //     },
-  //     error: (error) => {
-  //       // Handle login error (display an error message, redirect, etc.)
+  //     (error) => {
   //       console.error('Login failed:', error);
   //     }
-  //   });
-  // }
+  //   );
+  }
 }

@@ -1,6 +1,6 @@
 import boto3
 import flask_cors
-from flask import Flask, request
+from flask import Flask, jsonify, request
 from boto3.dynamodb.conditions import Key, Attr
 
 dynamodb = boto3.resource('dynamodb',
@@ -24,10 +24,10 @@ transactionMCC = []
 tempBudget = 10000
 
 @app.route('/login', methods=['POST'])
-def query_user_login(email, password):
-   # email = request.form['email']
-   # password = request.form['password']
-    
+def query_user_login():
+    data = request.form
+    email = data.get('email')
+    password = data.get('password')
     table = dynamodb.Table('Users')
     response = table.query(
         IndexName = 'Email-index',
@@ -37,10 +37,10 @@ def query_user_login(email, password):
     UserID = items[0]['User ID']
     if password == items[0]['Password (unhashed)']:
         print(f"Successfully logged into {email}")
-        return UserID
+        return jsonify({'Status': 'Logged in'})
     else:
         print("Invalid user login credentials")
-        return False
+        return jsonify({'error': 'Invalid user login credentials'}), 401
     
     
 def get_user_transaction(UserID):
@@ -83,8 +83,22 @@ def get_user_transaction(UserID):
                                         
 def check_budget(UserID): 
     get_user_transaction(UserID)
-    
-        
+  
+@app.route('/add_transaction', methods=['POST'])
+def add_transaction():
+    #reference to dynamodb
+    table = dynamodb.Table('Transactions')
+    try: 
+        #getting transaction payload
+        transactions_data = request.get_json()
+        #adding transaction to dynamodb
+        table.append(transactions_data)
+        #print message of completition for testing
+        return jsonify({"status": "success", "message": "Transaction added successfully"})
+    #error handling
+    except Exception as E:
+        return jsonify({"status": "error", "message": str(E)})
+
 def main():
     UserID = query_user_login("Kiera.Allen@gmail.com", "KieraAllen123") ##just a sample login
     get_user_transaction(str(UserID))

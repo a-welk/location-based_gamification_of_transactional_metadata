@@ -73,7 +73,7 @@ def get_user_transaction(UserID):
         response = table.query(
             KeyConditionExpression = Key('Merchant ID').eq(transactionMerchantID[x])
         )
-        items = response['Items']
+        items.append(response['Items'])
         print(response['Items'])
 
     for x in range(len(items)):

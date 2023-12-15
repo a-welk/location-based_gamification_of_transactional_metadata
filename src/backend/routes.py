@@ -42,7 +42,7 @@ def query_user_login():
         print("Invalid user login credentials")
         return jsonify({'error': 'Invalid user login credentials'}), 401
     
-    
+@app.route('/<int:user_id>/transactions', methods=['GET'])
 def get_user_transaction(UserID):
     
     """
@@ -57,21 +57,35 @@ def get_user_transaction(UserID):
     ##attempt at pagination in order to retrieve ALL the transactions from designated user
     got_items = []
     paginator = dynamodb.meta.client.get_paginator('query')
-    for page in paginator.paginate(TableName='Transactions-temp',
+    for page in paginator.paginate(TableName='Transactions',
                                    IndexName = 'User-index',
                                    KeyConditionExpression= Key('User').eq(UserID)):
                                         got_items += page['Items']
                                         this_page = page['Items']
                                         for x in range(len(this_page)):
-                                            userTransactions.append(this_page[x]['Transaction ID'])
+                                            userTransactions.append(this_page[x]['transaction_id'])
                                             transactionYear.append(this_page[x]['Year'])
                                             transactionMonth.append(this_page[x]['Month'])
                                             transactionDay.append(this_page[x]['Day'])
                                             transactionTime.append(this_page[x]['Time'])
                                             transactionAmount.append(this_page[x]['Amount'])
-                                            transactionMerchantID.append(this_page[x]['Merchant Name'])
+                                            transactionMerchantID.append(this_page[x]['Merchant_ID'])
                                             transactionMCC.append(this_page[x]['MCC'])
-                                        print("bonjour")
+                                            
+    for x in range(len(transactionMerchantID)):
+        table = dynamodb.Table('Merchants')
+        response = table.query(
+            KeyConditionExpression = Key('Merchant ID').eq(transactionMerchantID[x])
+        )
+        items = response['Items']
+        print(response['Items'])
+
+    for x in range(len(items)):
+        transactionLat.append(items[x]['Latitude'])
+        transactionLong.append(items[x]['Longitude'])
+        transactionZipcode.append(items[x]['Zipcode'])
+                                  
+
     print(transactionAmount)
     print(transactionTime)
     print(transactionDay)
@@ -80,6 +94,9 @@ def get_user_transaction(UserID):
     print(userTransactions)
     print(transactionMerchantID)
     print(transactionMCC)
+    # print(transactionLat)
+    # print(transactionLong)
+    # print(transactionZipcode)
                                         
 def check_budget(UserID): 
     get_user_transaction(UserID)

@@ -42,7 +42,7 @@ def query_user_login():
         print("Invalid user login credentials")
         return jsonify({'error': 'Invalid user login credentials'}), 401
     
-@app.route('/<int:user_id>/transactions', methods=['GET'])
+@app.route('/<int:UserID>/transactions', methods=['GET'])
 def get_user_transaction(UserID):
     
     """

@@ -11,6 +11,7 @@ dynamodb = boto3.resource('dynamodb',
 app = Flask(__name__)
 flask_cors.CORS(app)
 
+
 # Global Transaction table variables
 transactionID = [] 
 userTransactions = []
@@ -57,43 +58,37 @@ def get_user_transaction(UserID):
     ##attempt at pagination in order to retrieve ALL the transactions from designated user
     got_items = []
     paginator = dynamodb.meta.client.get_paginator('query')
+    data = {}
+    data[UserID] = []
+    arr = []
+    table = dynamodb.Table('Merchants')
     for page in paginator.paginate(TableName='Transactions',
                                    IndexName = 'User-index',
                                    KeyConditionExpression= Key('User').eq(UserID)):
                                         got_items += page['Items']
                                         this_page = page['Items']
                                         for x in range(len(this_page)):
-                                            userTransactions.append(this_page[x]['transaction_id'])
-                                            transactionYear.append(this_page[x]['Year'])
-                                            transactionMonth.append(this_page[x]['Month'])
-                                            transactionDay.append(this_page[x]['Day'])
-                                            transactionTime.append(this_page[x]['Time'])
-                                            transactionAmount.append(this_page[x]['Amount'])
-                                            transactionMerchantID.append(this_page[x]['Merchant_ID'])
-                                            transactionMCC.append(this_page[x]['MCC'])
+                                            response = table.query(
+                                                KeyConditionExpression = Key('Merchant ID').eq(this_page[x]['Merchant_ID'])
+                                            )
+                                            items = response['Items']
+                                            transaction = {}
+                                            transaction[this_page[x]['transaction_id']] = {
+                                                    'day' : this_page[x]['Day'],
+                                                    'month' : this_page[x]['Month'],
+                                                    'year' : this_page[x]['Year'],
+                                                    'time' : this_page[x]['Time'],
+                                                    'amount' : this_page[x]['Amount'],
+                                                    'merchant_id' : this_page[x]['Merchant_ID'],
+                                                    'mcc' : this_page[x]['MCC'],
+                                                    'latitude' : items[0]['Latitude'],
+                                                    'longitude' : items[0]['Longitude'],
+                                                    'zipcode' : items[0]['Zipcode']
+                                            }
+                                            arr.append(transaction)
+    data[UserID] = arr
                                             
-    for x in range(len(transactionMerchantID)):
-        table = dynamodb.Table('Merchants')
-        response = table.query(
-            KeyConditionExpression = Key('Merchant ID').eq(transactionMerchantID[x])
-        )
-        items = response['Items']
-        print(response['Items'])
-
-    for x in range(len(items)):
-        transactionLat.append(items[x]['Latitude'])
-        transactionLong.append(items[x]['Longitude'])
-        transactionZipcode.append(items[x]['Zipcode'])
-                                  
-
-    print(transactionAmount)
-    print(transactionTime)
-    print(transactionDay)
-    print(transactionMonth)
-    
-    print(userTransactions)
-    print(transactionMerchantID)
-    print(transactionMCC)
+    return jsonify(data)
     # print(transactionLat)
     # print(transactionLong)
     # print(transactionZipcode)

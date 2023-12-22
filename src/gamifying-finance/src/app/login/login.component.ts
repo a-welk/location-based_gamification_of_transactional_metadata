@@ -1,8 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, Injector, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpService } from '../services/http.service';
 import { FormsModule } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { HttpClient, HttpHandler } from '@angular/common/http';
 
 @Component({
   selector: 'app-login',
@@ -11,37 +11,28 @@ import { Subscription } from 'rxjs';
     CommonModule,
     FormsModule,
     ],
+  providers: [HttpService],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
 export class LoginComponent {
   email: string = '';
   password: string = '';
-  subscription!: Subscription;
-  subscriptionManager = [];
+  private promise: Promise<void> | undefined;
 
-  constructor(private http: HttpService) {}
+  constructor(private HttpService: HttpService) {}
 
-  ngOnInit(): void {
-    // this.subscriptionManager.push(
-    //   this.subscription.
-    // )
-
-  }
-
-  ngOnDestroy(): void {
-
-
-  }
-
-  login() {
-  //   this.http.getLogin(this.email, this.password).subscribe(
-  //     (response) => {
-  //       console.log('Login successful:', response);
-  //     },
-  //     (error) => {
-  //       console.error('Login failed:', error);
-  //     }
-  //   );
+  login(): void {
+    this.promise = this.HttpService.getLogin(this.email, this.password)
+      .then(
+        response => {
+          console.log(response);
+        }
+      )
+      .catch(
+        error => {
+          console.error(error);
+        }
+      );
   }
 }

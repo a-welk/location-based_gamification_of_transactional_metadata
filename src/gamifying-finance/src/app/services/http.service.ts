@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -11,16 +12,8 @@ export class HttpService {
 
   constructor(private http: HttpClient) { }
 
-  async getLogin(email: string, pass: string): Promise<any> {
-    this.inputEmail = email;
-    this.inputPass = pass;
-    const data = await fetch(this.apiUrl);
-
-    const response = await this.http.post<any>(`${this.apiUrl}/login`, {
-      email: this.inputEmail,
-      password: this.inputPass
-    });
-
-    return response;
+  login(email: string, password: string): Observable<any> {
+    const loginUrl = this.apiUrl + '/login';
+    return this.http.post(loginUrl, { email, password });
   }
 }

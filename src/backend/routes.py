@@ -26,22 +26,43 @@ tempBudget = 10000
 
 @app.route('/login', methods=['POST'])
 def query_user_login():
-    data = request.form
-    email = data.get('email')
-    password = data.get('password')
+    data = request.json
+    email = data['email']
+    password = data['password']
+
     table = dynamodb.Table('Users')
     response = table.query(
-        IndexName = 'Email-index',
-        KeyConditionExpression = Key('Email').eq(email)
+        IndexName='Email-index',
+        KeyConditionExpression=Key('Email').eq(email)
     )
     items = response['Items']
-    UserID = items[0]['User ID']
-    if password == items[0]['Password (unhashed)']:
-        print(f"Successfully logged into {email}")
-        return jsonify({'Status': 'Logged in'})
-    else:
-        print("Invalid user login credentials")
-        return jsonify({'error': 'Invalid user login credentials'}), 401
+
+    if not items:
+        return jsonify({'error': 'User not found'}), 404
+
+    if password == items[0]['Password']:
+        return jsonify({'status': 'Logged in successfully'})
+
+    return jsonify({'error': 'Invalid credentials'}), 401
+
+# def query_user_login():
+#     data = request.form
+#     email = data.get('email')
+#     print(email)
+#     password = data.get('password')
+#     table = dynamodb.Table('Users')
+#     response = table.query(
+#         IndexName = 'Email-index',
+#         KeyConditionExpression = Key('Email').eq(email)
+#     )
+#     items = response['Items']
+#     UserID = items[0]['User ID']
+#     if password == items[0]['Password (unhashed)']:
+#         print(f"Successfully logged into {email}")
+#         return jsonify({'Status': 'Logged in'})
+#     else:
+#         print("Invalid user login credentials")
+#         return jsonify({'error': 'Invalid user login credentials'}), 401
     
 @app.route('/<int:UserID>/transactions', methods=['GET'])
 def get_user_transaction(UserID):
@@ -111,12 +132,12 @@ def add_transaction():
     except Exception as E:
         return jsonify({"status": "error", "message": str(E)})
 
-def main():
-    UserID = query_user_login("Kiera.Allen@gmail.com", "KieraAllen123") ##just a sample login
-    get_user_transaction(str(UserID))
+# def main():
+    # UserID = query_user_login("Kiera.Allen@gmail.com", "KieraAllen123") just a sample login
+    # get_user_transaction(str(UserID))
     
     
 if __name__=="__main__":
     app.debug=True
     app.run()
-    main()
+    # main()

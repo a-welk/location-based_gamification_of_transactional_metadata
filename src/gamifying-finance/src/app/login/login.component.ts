@@ -1,8 +1,7 @@
-import { Component, Injector, inject } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpService } from '../services/http.service';
 import { FormsModule } from '@angular/forms';
-import { HttpClient, HttpHandler } from '@angular/common/http';
 
 @Component({
   selector: 'app-login',
@@ -18,21 +17,14 @@ import { HttpClient, HttpHandler } from '@angular/common/http';
 export class LoginComponent {
   email: string = '';
   password: string = '';
-  private promise: Promise<void> | undefined;
 
   constructor(private HttpService: HttpService) {}
 
-  login(): void {
-    this.promise = this.HttpService.getLogin(this.email, this.password)
-      .then(
-        response => {
-          console.log(response);
-        }
-      )
-      .catch(
-        error => {
-          console.error(error);
-        }
-      );
+  login() {
+    this.HttpService.login(this.email, this.password)
+      .subscribe({
+        next: response => console.log('Success!', response),
+        error: error => console.error('Error!', error)
+      });
   }
 }

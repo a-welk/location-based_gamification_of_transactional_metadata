@@ -1,5 +1,5 @@
 import boto3
-import flask_cors
+from flask_cors import CORS
 from flask import Flask, jsonify, request
 from boto3.dynamodb.conditions import Key, Attr
 
@@ -9,7 +9,7 @@ dynamodb = boto3.resource('dynamodb',
                           region_name="us-east-1")
 
 app = Flask(__name__)
-flask_cors.CORS(app)
+CORS(app)
 
 
 # Global Transaction table variables
@@ -29,20 +29,16 @@ def query_user_login():
     data = request.json
     email = data['email']
     password = data['password']
-
     table = dynamodb.Table('Users')
     response = table.query(
         IndexName='Email-index',
         KeyConditionExpression=Key('Email').eq(email)
     )
     items = response['Items']
-
     if not items:
         return jsonify({'error': 'User not found'}), 404
-
-    if password == items[0]['Password']:
+    if password == items[0]['Password (unhashed)']:
         return jsonify({'status': 'Logged in successfully'})
-
     return jsonify({'error': 'Invalid credentials'}), 401
 
 # def query_user_login():

@@ -7,12 +7,10 @@ import { Observable } from 'rxjs';
 })
 export class HttpService {
   private apiUrl = 'http://127.0.0.1:5000';
-  private inputEmail: String = '';
-  private inputPass: String = '';
 
   constructor(private http: HttpClient) { }
 
-  login(email: string, password: string): Observable<any> {
+  login(email: String, password: String): Observable<any> {
     const loginUrl = this.apiUrl + '/login';
     return this.http.post(loginUrl, { email, password });
   }

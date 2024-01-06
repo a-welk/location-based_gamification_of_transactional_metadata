@@ -26,10 +26,6 @@
 }
 
 @media screen and (max-width: 768px) {
-  .navBar {
-    min-height: 50px;
-  }
-
   .hamburger {
     display: flex;
     cursor: pointer;

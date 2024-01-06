@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet, RouterLinkActive, RouterLink} from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { NavbarComponent } from './navbar/navbar.component';
 import { LoginComponent } from './login/login.component';
 
@@ -12,6 +12,8 @@ import { LoginComponent } from './login/login.component';
   imports: [
     NavbarComponent,
     LoginComponent,
+    RouterModule,
+
   ],
   styleUrls: ['./app.component.css']
 })

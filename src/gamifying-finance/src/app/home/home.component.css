@@ -1,0 +1,47 @@
+.container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: calc(100vh - 70px);
+  width: 99vw;
+  padding: 0 10vw;
+  box-sizing: border-box;
+  margin: 0;
+  overflow: hidden;
+  margin: 0 auto;
+}
+
+.leftContainer {
+  flex: 0 0 40%;
+}
+
+.rightContainer {
+  flex: 0 0 55%;
+}
+
+
+.header {
+  color: #504B4B;
+  font-size: 56px;
+  font-family: Jost;
+  font-weight: 700;
+}
+
+.subtitles {
+  color: #504B4B;
+  font-size: 24px;
+  font-family: Jost;
+  font-weight: 400;
+  word-wrap: break-word
+}
+
+.homeButtons {
+  display: flex;
+  column-gap: 20px;
+}
+
+.image {
+  width: 100%;
+  height: auto;
+  padding-top: 20px;
+}

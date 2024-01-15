@@ -6,8 +6,10 @@
   </div>
   <div class="navItems">
     <a routerLink="/dashboard">Dashboard</a>
-    <!-- <a *ngIf="authService.isLoggedIn()" routerLink="/signout">Sign Out</a>
-    <a *ngIf="!authService.isLoggedIn()" routerLink="/login">Login</a> -->
+    <a routerLink="/leaderboard">Leaderboard</a>
+    <a *ngIf="!(isLoggedIn$ | async)" routerLink="/signup">Sign Up</a>
+    <a *ngIf="!(isLoggedIn$ | async)" routerLink="/login">Login</a>
+    <a *ngIf="isLoggedIn$ | async" (click)="logout()" routerLink="/home">Log Out</a>
   </div>
   <div class="hamburger">
     <span id="openHamburger">&#9776;</span>

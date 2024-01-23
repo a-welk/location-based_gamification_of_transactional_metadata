@@ -1,6 +1,10 @@
 import boto3
 from flask_cors import CORS
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, make_response, session
+import jwt
+from datetime import datetime, timedelta
+from functools import wraps
+from decouple import config
 from boto3.dynamodb.conditions import Key, Attr
 
 dynamodb = boto3.resource('dynamodb',
@@ -10,6 +14,7 @@ dynamodb = boto3.resource('dynamodb',
 
 app = Flask(__name__)
 CORS(app)
+app.config['SECRET_KEY'] = config('SECRET_KEY')
 
 
 # Global Transaction table variables
@@ -46,10 +51,13 @@ def query_user_login():
     )
     items = response['Items']
     if not items:
-        return jsonify({'error': 'User not found'}), 404
+        return jsonify({'error': 'User not found', 'status': 404}), 404
     if password == items[0]['Password (unhashed)']:
-        return jsonify({'status': '200'})
-    return jsonify({'error': 'Invalid credentials'}), 401
+        # return jsonify({'status': '200'})
+        userID = int(items[0]['User ID'])
+        token = jwt.encode({'userId': userID, 'email': email}, app.config['SECRET_KEY'], algorithm='HS256')
+        return jsonify({'token': token}), 200
+    return jsonify({'error': 'Invalid credentials', 'status': 401}), 401
 
 # def query_user_login():
 #     data = request.form

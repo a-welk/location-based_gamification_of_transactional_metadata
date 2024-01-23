@@ -24,6 +24,16 @@ transactionMerchantID = []
 transactionMCC = []
 tempBudget = 10000
 
+@app.route('/signup', methods=['POST'])
+def query_user_signup():
+       data = request.json
+       email = data['email']
+       password = data['password']
+       table = dynamodb.Table('Users')
+       response = table.query(
+              
+       )
+
 @app.route('/login', methods=['POST'])
 def query_user_login():
     data = request.json
@@ -38,7 +48,7 @@ def query_user_login():
     if not items:
         return jsonify({'error': 'User not found'}), 404
     if password == items[0]['Password (unhashed)']:
-        return jsonify({'status': 'Logged in successfully'})
+        return jsonify({'status': '200'})
     return jsonify({'error': 'Invalid credentials'}), 401
 
 # def query_user_login():

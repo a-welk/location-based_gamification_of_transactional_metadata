@@ -10,6 +10,11 @@ export class HttpService {
 
   constructor(private http: HttpClient) { }
 
+  signup(email: String, password: String) {
+    const signupUrl = this.apiUrl + '/signup';
+    return this.http.post(signupUrl, { email, password });
+  }
+
   login(email: String, password: String): Observable<any> {
     const loginUrl = this.apiUrl + '/login';
     return this.http.post(loginUrl, { email, password });

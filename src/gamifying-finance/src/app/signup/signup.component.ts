@@ -1,13 +1,39 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { HttpService } from '../services/http.service';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-signup',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './signup.component.html',
   styleUrl: './signup.component.css'
 })
 export class SignupComponent {
+  email: string = '';
+  password: string = '';
+  confirmPassword: string = '';
+  matching: boolean = true;
 
+  constructor(private HttpService: HttpService, private AuthService: AuthService) {}
+
+  checkPasswordMatch() {
+    this.matching = this.password === this.confirmPassword;
+  }
+
+  signup() {
+    this.checkPasswordMatch();
+    if (this.matching == false) {
+      console.error('Passwords do not match');
+      // Deal with false
+    } else {
+      this.HttpService.signup(this.email, this.password)
+        .subscribe({
+          next: response => console.log('Success!', response),
+          error: error => console.error('Error!', error)
+        });
+    }
+  }
 }

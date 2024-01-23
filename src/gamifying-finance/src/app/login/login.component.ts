@@ -3,6 +3,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpService } from '../services/http.service';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -19,12 +20,18 @@ export class LoginComponent {
   email: string = '';
   password: string = '';
 
-  constructor(private HttpService: HttpService, private AuthService: AuthService) {}
+  constructor(private HttpService: HttpService, private AuthService: AuthService, private Router: Router) {}
 
   login() {
     this.AuthService.login(this.email, this.password)
       .subscribe({
-        next: response => console.log('Success!', response),
+        next: response => {
+          if (response.status == 200) {
+            console.log('Success!', response.status);
+            this.Router.navigate(['/dashboard'])
+          }
+
+        },
         error: error => console.error('Error!', error)
       });
   }

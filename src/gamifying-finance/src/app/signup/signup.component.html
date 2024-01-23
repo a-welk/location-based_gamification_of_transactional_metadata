@@ -1,1 +1,15 @@
-<p>signup works!</p>
+<div class="container">
+  <h2>Sign up</h2>
+  <form (ngSubmit)="signup()">
+    <label for="email">Email:</label>
+    <input type="text" id="email" name="email" [(ngModel)]="email" required>
+    <label for="password">Password:</label>
+    <input type="password" id="password" name="password" [(ngModel)]="password" required>
+    <label for="confirmPassword">Confirm Password:</label>
+    <input type="password" id="confirmPassword" name="confirmPassword" [(ngModel)]="confirmPassword" required>
+    <p *ngIf="!matching">Passwords do not match</p>
+    <button type="submit">Sign up</button>
+  </form>
+</div>
+
+

@@ -146,6 +146,19 @@ def add_transaction():
     except Exception as E:
         return jsonify({"status": "error", "message": str(E)})
 
+@app.route('/dashboard')
+def dashboard():
+    token = request.headers.get('Authorization')
+    try:
+        decoded = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+        return jsonify({'message': 'Token decoded successfully', 'user': decoded})
+    except jwt.ExpiredSignatureError:
+        return jsonify({'error': 'Token has expired'}), 401
+    except jwt.InvalidTokenError:
+        return jsonify({'error': 'Invalid token'}), 401
+    
+    # return jsonify({'state': 'logged in'}), 200
+       
 # def main():
     # UserID = query_user_login("Kiera.Allen@gmail.com", "KieraAllen123") just a sample login
     # get_user_transaction(str(UserID))

@@ -24,7 +24,7 @@ h3{
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 7.5vh; /* Set container height to full viewport height */
+    height: 7.5vh; /* Set container height to 7.5% viewport height */
 }
 .btn-custom{
     background-color: #004977;

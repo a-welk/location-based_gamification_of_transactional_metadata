@@ -8,6 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-aFq/bzH65dt+w6FI2ooMVUpc+21e0SRygnTpmBvdBgSdnuTN7QbdgL+OapgHtvPp" crossorigin="anonymous">
         <link rel="stylesheet" href="dashboard.component.css">
+        <script src="https://cdn.syncfusion.com/ej2/dist/ej2.min.js" type="text/javascript"></script>
     <style>
         .feature-icon {
             width: 4rem;
@@ -52,6 +53,83 @@
             </div>
         </div>
     </header>
+    <div class="container">
+    <div class="container d-flex align-items-left justify-content-left mb-2 mb-lg-0 link-body-emphasis text-decoration-none" style="justify-content: flex-start;">
+        <div id="chart1" style="width: 450px; height: 450px;"></div>
+        <div id="chart2" style="width: 450px; height: 450px;"></div>
+        <div id="chart3" style="width: 450px; height: 450px;"></div>
+    </div>
+    <div id="descriptions_of_piecharts" class="container d-flex align-items-center justify-content-center mb-0 mb-lg-0 link-body-emphasis text-decoration-none" style="justify-content: flex-start;">
+        <h3 style="width: 450px; height: 150px;">Expense Breakdown</h3>
+        <h3 style="width: 450px; height: 150px;">Placeholder</h3>
+        <h3 style="width: 450px; height: 150px;">Last $1000 Spent</h3>
+    </div>
+        <div class="container-center justify-content-center">
+        <button type="button" class="btn btn-custom btn-lg">Continue</button>
+        </div>
+    </div>
+    <script>
+ 
+        var pie = new ej.charts.AccumulationChart({
+            //Initializing Series
+            series: [
+                {
+                    dataSource: [
+                        { 'x': 'Groceries', y: 12.5 }, { 'x': 'Other', y: 25 },
+                        { 'x': 'Gas', y: 12.5 },
+                        { 'x': 'Restaurants', y: 5 }, { 'x': 'Subscriptions', y: 20 },
+                        { 'x': 'Rent', y: 25 }
+                    ],
+                    dataLabel: {
+                        visible: true,
+                        position: 'Inside',
+                    },
+                    xName: 'x',
+                    yName: 'y'
+                }
+            ],
+        });
+        pie.appendTo('#chart1');
+        var pie2 = new ej.charts.AccumulationChart({
+            //Initializing Series
+            series: [
+                {
+                    dataSource: [
+                        { 'x': 'Net Interest', y: 8 },
+                        { 'x': 'Discretionary', y: 50 },
+                        { 'x': 'Mandatory', y: 42 }, 
+                    ],
+                    dataLabel: {
+                        visible: true,
+                        position: 'Inside',
+                    },
+                    xName: 'x',
+                    yName: 'y'
+                }
+            ],
+        });
+        pie2.appendTo('#chart2');
+        var pie3 = new ej.charts.AccumulationChart({
+            //Initializing Series
+            series: [
+                {
+                    dataSource: [
+                        { 'x': 'Rent', y: 400 },
+                        { 'x': 'Gas', y: 200 },
+                        { 'x': 'Subscriptions', y: 160 }, 
+                        { 'x': 'Groceries', y: 240}
+                    ],
+                    dataLabel: {
+                        visible: true,
+                        position: 'Inside',
+                    },
+                    xName: 'x',
+                    yName: 'y'
+                }
+            ],
+        });
+        pie3.appendTo('#chart3');
+    </script>
     <script src="/docs/5.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
         crossorigin="anonymous"></script>

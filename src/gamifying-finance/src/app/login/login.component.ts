@@ -26,8 +26,8 @@ export class LoginComponent {
     this.AuthService.login(this.email, this.password)
       .subscribe({
         next: response => {
-          if (response.status == 200) {
-            console.log('Success!', response.status);
+          if (response.token) {
+            console.log('Successfully logged in! Token received:', response.token);
             this.Router.navigate(['/dashboard'])
           }
 

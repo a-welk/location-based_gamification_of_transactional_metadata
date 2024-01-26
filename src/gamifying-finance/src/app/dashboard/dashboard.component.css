@@ -18,6 +18,7 @@ header{
 h3{
     text-align: center;
     font-family: 'Jost', sans-serif;
+    font-weight: 525;
 }
 
 .container-center {
@@ -31,4 +32,17 @@ h3{
     border-color: #004977;
     color: white;
     font-family: 'Jost', sans-serif;
+    font-size: 30;
+    font-weight: 525;
+    width: 13%;
+    height: 80%;
+    border-radius: 12px;
+    box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
+}
+.btn-custom:hover{
+    background-color: #023454;
+    color: white;
+}
+var:hover{
+    
 }

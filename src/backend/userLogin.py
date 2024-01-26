@@ -1,4 +1,5 @@
 import boto3
+from decimal import *
 from boto3.dynamodb.conditions import Key, Attr
 dynamodb = boto3.resource('dynamodb',
                           aws_access_key_id="AKIA42KZIHZE3NIJXCJ2", #insert YOUR aws access key here
@@ -93,12 +94,38 @@ def get_user_transaction(UserID):
     print(transactionLat)
     print(transactionLong)
     print(transactionZipcode)
+    
+def insert_transaction(amount, card, time, day, month, year, isFraud, MCC, merchantCity, merchantState, merchantID, chip, userID, zipcode):
+    amount = str(amount)
+    userID = str(userID)
+    table = dynamodb.Table('Transactions')
+    max = table.item_count
+    response = table.put_item(
+        Item={
+            'transaction_id': str(max + 1),
+            'Amount': amount,
+            'Card': card,
+            'Day': day,
+            'Is Fraud?': isFraud,
+            'MCC': MCC,
+            'Merchant City': merchantCity,
+            'Merchant State': merchantState,
+            'Merchant_ID': merchantID,
+            'Month': month,
+            'Time': time,
+            'Use Chip': chip,
+            'User': userID,
+            'Year': year,
+            'Zip': zipcode
+        }
+    )
                                         
         
         
 def main():
-    UserID = query_user_login("Kiera.Allen@gmail.com", "KieraAllen123") ##just a sample login
-    get_user_transaction(str(UserID))
+    #UserID = query_user_login("Kiera.Allen@gmail.com", "KieraAllen123") ##just a sample login
+    #get_user_transaction(str(UserID))
+    insert_transaction(44.21, 0, "3:32", 22, 11, 2021, "No", 5541, "Richmond", "VA", 9, "Chip Transaction", 731, 23220)
     
     
 if __name__=="__main__":

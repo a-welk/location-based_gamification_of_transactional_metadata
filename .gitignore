@@ -1,7 +1,7 @@
 src/gamifying-finance/node_modules/
 src/gamifying-finance/.angular
 venv/
-src/backend/venv/
+src/backend/venv/*
 .env
-
-src/backend/venv/
+**/__pycache__/
+*.pyc

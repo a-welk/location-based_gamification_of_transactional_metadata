@@ -1,4 +1,5 @@
 import boto3
+import uuid
 import os
 #from dotenv import load_dotenv
 from decimal import *
@@ -119,6 +120,7 @@ def insert_transaction(amount, card, time, day, month, year, isFraud, MCC, merch
     )
     """
     
+    max = uuid.uuid4()
     max = response['Attributes']['count']
     response = table.put_item(
         Item={

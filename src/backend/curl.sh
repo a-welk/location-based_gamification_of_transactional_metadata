@@ -1,0 +1,1 @@
+curl -X POST -H "Content-Type: application/json" -d '{"name": "Your Name"}' http://localhost:5000/addTransaction

@@ -1,4 +1,6 @@
 import boto3
+import os
+#from dotenv import load_dotenv
 from decimal import *
 from boto3.dynamodb.conditions import Key, Attr
 dynamodb = boto3.resource('dynamodb',
@@ -99,10 +101,28 @@ def insert_transaction(amount, card, time, day, month, year, isFraud, MCC, merch
     amount = str(amount)
     userID = str(userID)
     table = dynamodb.Table('Transactions')
-    max = table.item_count
+    """
+    response = table.scan(
+        Select='COUNT'
+    )
+    -----------------------------------------
+    client = boto3.client('dynamodb', aws_access_key_id='AKIA42KZIHZE3NIJXCJ2', aws_secret_access_key='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', region_name='us-east-1')
+    response = client.describe_table(TableName='Transactions')
+    max = response['Table']['ItemCount']
+    ------------------------------------------- 
+    response = table.update_item(
+        Key={'pk': 'transaction_id'},
+        UpdateExpression="ADD #cnt :val",
+        ExpressionAttributeNames={'#cnt': 'count'},
+        ExpressionAttributeValues={':val': 1},
+        ReturnValues="UPDATED_NEW"
+    )
+    """
+    
+    max = response['Attributes']['count']
     response = table.put_item(
         Item={
-            'transaction_id': str(max + 1),
+            'transaction_id': str(max),
             'Amount': amount,
             'Card': card,
             'Day': day,
@@ -119,13 +139,48 @@ def insert_transaction(amount, card, time, day, month, year, isFraud, MCC, merch
             'Zip': zipcode
         }
     )
-                                        
+    
+def insert_user(address, apartment, birthMonth, birthYear, city, age, email, FICOscore, gender, lat, long, numCards, password, perCapitaIncome, name, retirementAge, state, debt, annualIncome, zipcode):
+    table = dynamodb.Table('Users')
+    client = boto3.client('dynamodb', aws_access_key_id='AKIA42KZIHZE3NIJXCJ2', aws_secret_access_key='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', region_name='us-east-1')
+    response = client.describe_table(TableName='Users')
+    userID = response['Table']['ItemCount']
+    userID = userID + 1
+    response = table.put_item(
+        Item={
+            'User ID': userID,
+           'Address': address,
+           'Apartment': apartment,
+           'Birth Month': birthMonth,
+           'Birth Year': birthYear,
+           'City': city,
+           'Current Age': age,
+           'Email': email,
+           'FICO Score': FICOscore,
+           'Gender': gender,
+           'Latitude': lat,
+           'Longitude': long,
+           'Nume Credit Cards': numCards,
+           'Password (unhashed)': password,
+           'Per Capita Income - Zipcode': perCapitaIncome,
+           'Person': name,
+           'Retirement Age': retirementAge,
+           'State': state,
+           'Total Debt': debt,
+           'Yearly Income - Person': annualIncome,
+           'Zipcode': zipcode
+        }
+    )     
         
         
 def main():
     #UserID = query_user_login("Kiera.Allen@gmail.com", "KieraAllen123") ##just a sample login
+    #UserID = 2011
     #get_user_transaction(str(UserID))
-    insert_transaction(44.21, 0, "3:32", 22, 11, 2021, "No", 5541, "Richmond", "VA", 9, "Chip Transaction", 731, 23220)
+    #insert_transaction(44.25, 0, "3:32", 22, 11, 2021, "No", 5541, "Richmond", "VA", 9, "Chip Transaction", 2011, 23220)
+    insert_user("1411 Grove Ave", "11", "August", "2001", "Richmond", 22, "welka@vcu.edu", 750, "male", "37.54873869465798", "37.54873869465798, -77.45798251781274", 
+                2, "AlexWelk123", 10000, "Alex Welk", 70, "VA", 0, 10000, 23220)
+
     
     
 if __name__=="__main__":

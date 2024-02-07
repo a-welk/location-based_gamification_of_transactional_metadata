@@ -21,17 +21,12 @@ import { Observable } from 'rxjs';
   styleUrl: './navbar.component.css'
 })
 export class NavbarComponent implements OnInit {
-  isLoggedIn$: Observable<boolean>;
+  isLoggedIn$!: Observable<boolean>;
 
   constructor(public AuthService: AuthService) {
-    this.isLoggedIn$ = this.AuthService.isLoggedIn();
   }
 
   ngOnInit() {
-
-  }
-
-  logout() {
-    this.AuthService.logout();
+    this.isLoggedIn$ = this.AuthService.isLoggedIn();
   }
 }

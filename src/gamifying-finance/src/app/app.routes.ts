@@ -6,7 +6,12 @@ import { NavbarComponent } from './navbar/navbar.component';
 import { HomeComponent } from './home/home.component';
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { HttpClientModule } from '@angular/common/http';
 import { SignupComponent } from './signup/signup.component';
+import { TransactionsComponent } from './transactions/transactions.component';
+
+
 
 export const routes: Routes = [
   {path: 'dashboard', component: DashboardComponent},
@@ -15,6 +20,7 @@ export const routes: Routes = [
   {path: 'signup', component: SignupComponent},
   {path: 'navbar', component: NavbarComponent},
   {path: 'home', component: HomeComponent},
+  {path: 'transactions', component: TransactionsComponent},
   {path: '**', component: HomeComponent, pathMatch: 'full'},
 ];
 

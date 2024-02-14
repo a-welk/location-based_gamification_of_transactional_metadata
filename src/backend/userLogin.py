@@ -32,8 +32,8 @@ def query_user_login(email, password):
         KeyConditionExpression = Key('Email').eq(email)
     )
     items = response['Items']
-    UserID = items[0]['User ID']
-    if password == items[0]['Password (unhashed)']:
+    UserID = items[0]['UserUUID']
+    if password == items[0]['Password']:
         print(f"Successfully logged into {email}")
         return UserID
     else:
@@ -46,12 +46,12 @@ def get_user_transaction(UserID):
     got_items = []
     paginator = dynamodb.meta.client.get_paginator('query')
     for page in paginator.paginate(TableName='Transactions',
-                                   IndexName = 'User-index',
+                                   IndexName = 'UserUUID-index',
                                    KeyConditionExpression= Key('User').eq(UserID)):
                                         got_items += page['Items']
                                         this_page = page['Items']
                                         for x in range(len(this_page)):
-                                            userTransactions.append(this_page[x]['transaction_id'])
+                                            userTransactions.append(this_page[x]['TransactionUUID'])
                                             transactionYear.append(this_page[x]['Year'])
                                             transactionMonth.append(this_page[x]['Month'])
                                             transactionDay.append(this_page[x]['Day'])
@@ -129,7 +129,7 @@ def insert_user(address, apartment, birthMonth, birthYear, city, age, email, FIC
     userID = uuid.uuid4()
     response = table.put_item(
         Item={
-            'User ID': userID,
+            'UserUUID': userID,
            'Address': address,
            'Apartment': apartment,
            'Birth Month': birthMonth,

@@ -47,7 +47,7 @@ def get_user_transaction(UserID):
     paginator = dynamodb.meta.client.get_paginator('query')
     for page in paginator.paginate(TableName='Transactions',
                                    IndexName = 'UserUUID-index',
-                                   KeyConditionExpression= Key('User').eq(UserID)):
+                                   KeyConditionExpression= Key('UserUUID').eq(UserID)):
                                         got_items += page['Items']
                                         this_page = page['Items']
                                         for x in range(len(this_page)):
@@ -57,21 +57,32 @@ def get_user_transaction(UserID):
                                             transactionDay.append(this_page[x]['Day'])
                                             transactionTime.append(this_page[x]['Time'])
                                             transactionAmount.append(this_page[x]['Amount'])
-                                            transactionMerchantID.append(this_page[x]['Merchant_ID'])
+                                            transactionMerchantID.append(this_page[x]['MerchantUUID'])
                                             transactionMCC.append(this_page[x]['MCC'])
     #gets merchant information for each merchantID in each transaction                                        
     for x in range(len(transactionMerchantID)):
         table = dynamodb.Table('Merchants')
         response = table.query(
-            KeyConditionExpression = Key('Merchant ID').eq(transactionMerchantID[x])
+            KeyConditionExpression = Key('MerchantUUID').eq(transactionMerchantID[x])
         )
         items.extend(response['Items'])
     
     #adds each merchant attribute to their respective list
     for x in range(len(items)):
-        transactionLat.append(items[x]['Latitude'])
-        transactionLong.append(items[x]['Longitude'])
-        transactionZipcode.append(items[x]['Zipcode'])
+        try:
+            transactionLat.append(items[x]['latitude'])
+        except KeyError as ke:
+            transactionLat.append("N/A")
+        
+        try:
+            transactionLong.append(items[x]['longitude'])
+        except KeyError as ke:
+            transactionLong.append("N/A")
+        
+        try:
+            transactionZipcode.append(items[x]['zip'])
+        except KeyError as ke:
+            transactionZipcode.append("N/A")
         
     #formats all transaction data and puts it into output.json
     zipped = list(zip(userTransactions, transactionAmount, transactionDay, transactionMonth, transactionYear, transactionTime, transactionMerchantID, transactionMCC, transactionLat, transactionLong, transactionZipcode))
@@ -155,9 +166,9 @@ def insert_user(address, apartment, birthMonth, birthYear, city, age, email, FIC
         
         
 def main():
-    UserID = query_user_login("Emerson.Rogers@gmail.com", "EmersonRogers123") #just a sample login
+    #UserID = query_user_login("Emerson.Rogers@gmail.com", "EmersonRogers123") #just a sample login
     #UserID = 2001
-    get_user_transaction(str(UserID))
+    get_user_transaction("1c146799-2c2c-4a93-9dea-7936ae9c3f41")
     #insert_transaction(44.25, 0, "3:32", 22, 11, 2021, "No", 5541, "Richmond", "VA", 9, "Chip Transaction", 2011, 23220)
     #insert_user("1411 Grove Ave", "11", "August", "2001", "Richmond", 22, "welka@vcu.edu", 750, "male", "37.54873869465798", "37.54873869465798, -77.45798251781274", 
                 #2, "AlexWelk123", 10000, "Alex Welk", 70, "VA", 0, 10000, 23220)

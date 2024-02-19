@@ -1,5 +1,6 @@
 import boto3
 import uuid
+import bcrypt
 import os
 import json
 #from dotenv import load_dotenv
@@ -33,12 +34,17 @@ def query_user_login(email, password):
     )
     items = response['Items']
     UserID = items[0]['UserUUID']
-    if password == items[0]['Password']:
+    hashed_password = items[0]['Password']
+    print(password.encode('utf-8'))
+    print(hashed_password.encode('utf-8'))
+    if bcrypt.checkpw(password.encode('utf-8'), hashed_password):
         print(f"Successfully logged into {email}")
         return UserID
     else:
         print("Invalid user login credentials")
         return False
+    
+    
     
 #queries transactions table for all the transactions of a given userID
 def get_user_transaction(UserID):
@@ -118,11 +124,11 @@ def insert_transaction(amount, card, time, day, month, year, isFraud, MCC, merch
             'MCC': MCC,
             'Merchant City': merchantCity,
             'Merchant State': merchantState,
-            'Merchant_ID': merchantID,
+            'MerchantUUID': merchantID,
             'Month': month,
             'Time': time,
             'Use Chip': chip,
-            'User': userID,
+            'UserUUID': userID,
             'Year': year,
             'Zip': zipcode
         }
@@ -137,39 +143,40 @@ def insert_user(address, apartment, birthMonth, birthYear, city, age, email, FIC
     userID = response['Table']['ItemCount']
     userID = userID + 1
     """
+    password = bcrypt.hash(password, 12)
     userID = uuid.uuid4()
     response = table.put_item(
         Item={
             'UserUUID': userID,
-           'Address': address,
-           'Apartment': apartment,
-           'Birth Month': birthMonth,
-           'Birth Year': birthYear,
-           'City': city,
-           'Current Age': age,
-           'Email': email,
-           'FICO Score': FICOscore,
-           'Gender': gender,
-           'Latitude': lat,
-           'Longitude': long,
-           'Nume Credit Cards': numCards,
-           'Password (unhashed)': password,
-           'Per Capita Income - Zipcode': perCapitaIncome,
-           'Person': name,
-           'Retirement Age': retirementAge,
-           'State': state,
-           'Total Debt': debt,
-           'Yearly Income - Person': annualIncome,
-           'Zipcode': zipcode
+            'Password': password,
+            'Address': address,
+            'Apartment': apartment,
+            'Birth Month': birthMonth,
+            'Birth Year': birthYear,
+            'City': city,
+            'Current Age': age,
+            'Email': email,
+            'FICO Score': FICOscore,
+            'Gender': gender,
+            'Latitude': lat,
+            'Longitude': long,
+            'Nume Credit Cards': numCards,
+            'Per Capita Income - Zipcode': perCapitaIncome,
+            'Person': name,
+            'Retirement Age': retirementAge,
+            'State': state,
+            'Total Debt': debt,
+            'Yearly Income - Person': annualIncome,
+            'Zipcode': zipcode
         }
     )     
         
         
 def main():
-    #UserID = query_user_login("Emerson.Rogers@gmail.com", "EmersonRogers123") #just a sample login
-    #UserID = 2001
-    get_user_transaction("1c146799-2c2c-4a93-9dea-7936ae9c3f41")
-    #insert_transaction(44.25, 0, "3:32", 22, 11, 2021, "No", 5541, "Richmond", "VA", 9, "Chip Transaction", 2011, 23220)
+    UserID = query_user_login("cristiano.morris@gmail.com", "CristianoMorris123") #just a sample login
+    #UserID = uuid.uuid4
+    #get_user_transaction("1c146799-2c2c-4a93-9dea-7936ae9c3f41")
+    #insert_transaction(420.69, 0, "3:32", 22, 11, 2021, "No", 5541, "Richmond", "VA", '2e62a0d3-ac63-4077-8784-7dda1c678927', "Chip Transaction", 'b84d7a7e-e05e-4505-870d-d6d229f9d6b0', 23220)
     #insert_user("1411 Grove Ave", "11", "August", "2001", "Richmond", 22, "welka@vcu.edu", 750, "male", "37.54873869465798", "37.54873869465798, -77.45798251781274", 
                 #2, "AlexWelk123", 10000, "Alex Welk", 70, "VA", 0, 10000, 23220)
 

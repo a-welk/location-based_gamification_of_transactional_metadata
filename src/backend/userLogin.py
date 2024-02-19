@@ -111,10 +111,9 @@ def insert_transaction(amount, card, time, day, month, year, isFraud, MCC, merch
     amount = str(amount)
     table = dynamodb.Table('Transactions')
     transactionID = uuid.uuid4()
-    merchantID = "{" + merchantID + "}"
-    merchantID = uuid.UUID(merchantID)
-    userID = "{" + userID + "}"
-    userID = uuid.UUID(userID)
+    #merchantID = uuid.UUID(merchantID)
+    #userID = uuid.UUID(userID)
+    transactionID = str(transactionID)
     response = table.put_item(
         Item={
             'TransactionUUID': transactionID,

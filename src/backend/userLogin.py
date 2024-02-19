@@ -37,7 +37,7 @@ def query_user_login(email, password):
     hashed_password = items[0]['Password']
     print(password.encode('utf-8'))
     print(hashed_password.encode('utf-8'))
-    if bcrypt.checkpw(password.encode('utf-8'), hashed_password):
+    if bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8')):
         print(f"Successfully logged into {email}")
         return UserID
     else:

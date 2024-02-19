@@ -35,8 +35,6 @@ def query_user_login(email, password):
     items = response['Items']
     UserID = items[0]['UserUUID']
     hashed_password = items[0]['Password']
-    print(password.encode('utf-8'))
-    print(hashed_password.encode('utf-8'))
     if bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8')):
         print(f"Successfully logged into {email}")
         return UserID
@@ -111,12 +109,15 @@ def get_user_transaction(UserID):
 #inserts a new transaction into the transaction table
 def insert_transaction(amount, card, time, day, month, year, isFraud, MCC, merchantCity, merchantState, merchantID, chip, userID, zipcode):
     amount = str(amount)
-    userID = str(userID)
     table = dynamodb.Table('Transactions')
     transactionID = uuid.uuid4()
+    merchantID = "{" + merchantID + "}"
+    merchantID = uuid.UUID(merchantID)
+    userID = "{" + userID + "}"
+    userID = uuid.UUID(userID)
     response = table.put_item(
         Item={
-            'transaction_id': transactionID,
+            'TransactionUUID': transactionID,
             'Amount': amount,
             'Card': card,
             'Day': day,
@@ -173,10 +174,10 @@ def insert_user(address, apartment, birthMonth, birthYear, city, age, email, FIC
         
         
 def main():
-    UserID = query_user_login("cristiano.morris@gmail.com", "CristianoMorris123") #just a sample login
+    #UserID = query_user_login("cristiano.morris@gmail.com", "CristianoMorris123") #just a sample login
     #UserID = uuid.uuid4
     #get_user_transaction("1c146799-2c2c-4a93-9dea-7936ae9c3f41")
-    #insert_transaction(420.69, 0, "3:32", 22, 11, 2021, "No", 5541, "Richmond", "VA", '2e62a0d3-ac63-4077-8784-7dda1c678927', "Chip Transaction", 'b84d7a7e-e05e-4505-870d-d6d229f9d6b0', 23220)
+    insert_transaction(420.69, 0, "3:32", 22, 11, 2021, "No", 5541, "Richmond", "VA", '2e62a0d3-ac63-4077-8784-7dda1c678927', "Chip Transaction", 'b84d7a7e-e05e-4505-870d-d6d229f9d6b0', 23220)
     #insert_user("1411 Grove Ave", "11", "August", "2001", "Richmond", 22, "welka@vcu.edu", 750, "male", "37.54873869465798", "37.54873869465798, -77.45798251781274", 
                 #2, "AlexWelk123", 10000, "Alex Welk", 70, "VA", 0, 10000, 23220)
 

@@ -1,13 +1,11 @@
 <div class="container">
-  <h2>Sign up</h2>
+  <h2 class="header">Sign up</h2>
   <form (ngSubmit)="signup()">
-    <label for="email">Email:</label>
-    <input type="text" id="email" name="email" [(ngModel)]="email" required>
-    <label for="password">Password:</label>
-    <input type="password" id="password" name="password" [(ngModel)]="password" required>
-    <label for="confirmPassword">Confirm Password:</label>
-    <input type="password" id="confirmPassword" name="confirmPassword" [(ngModel)]="confirmPassword" required>
+    <input type="text" id="email" name="email" [(ngModel)]="email" required placeholder="Email">
+    <input type="password" id="password" name="password" [(ngModel)]="password" required placeholder="Password">
+    <input type="password" id="confirmPassword" name="confirmPassword" [(ngModel)]="confirmPassword" required placeholder="Confirm Password">
     <p *ngIf="!matching">Passwords do not match</p>
+    <button type="button" (click)="closeDialog()">Close</button>
     <button type="submit">Sign up</button>
   </form>
 </div>

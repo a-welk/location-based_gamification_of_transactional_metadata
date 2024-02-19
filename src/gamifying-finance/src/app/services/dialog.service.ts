@@ -7,42 +7,39 @@ import { SignupComponent } from '../signup/signup.component';
   providedIn: 'root'
 })
 export class DialogService {
-  private isDialogOpen = false;
+  private dialogRefLogin: any;
+  private dialogRefSignup: any;
+
 
   constructor(private dialog: MatDialog) { }
 
   openLoginDialog(): void {
-    if (!this.isDialogOpen) {
+    if (this.dialogRefSignup && this.dialogRefSignup.componentInstance instanceof SignupComponent) {
+      this.dialogRefSignup.close();
+      this.dialogRefSignup = null;
+    }
+    else if (!this.dialogRefLogin || !(this.dialogRefLogin.componentInstance instanceof LoginComponent)) {
       const dialogConfig = new MatDialogConfig();
       dialogConfig.width = '400px';
       dialogConfig.height = '400px';
       dialogConfig.position = { top: '-33%', left: '35%' };
-      dialogConfig.panelClass = 'custom-dialog-container';
       dialogConfig.autoFocus = false;
-      const dialogRef = this.dialog.open(LoginComponent, dialogConfig);
-
-      this.isDialogOpen = true;
-
-      dialogRef.afterClosed().subscribe(() => {
-        this.isDialogOpen = false;
-      });
+      this.dialogRefLogin = this.dialog.open(LoginComponent, dialogConfig);
     }
   }
 
   openSignupDialog(): void {
-    if (!this.isDialogOpen) {
+    if (this.dialogRefLogin && this.dialogRefLogin.componentInstance instanceof LoginComponent) {
+      this.dialogRefLogin.close();
+      this.dialogRefLogin = null;
+    }
+    else if (!this.dialogRefSignup || !(this.dialogRefSignup.componentInstance instanceof SignupComponent)) {
       const dialogConfig = new MatDialogConfig();
       dialogConfig.width = '400px';
       dialogConfig.height = '400px';
       dialogConfig.position = { top: '-33%', left: '35%' };
-      dialogConfig.panelClass = 'custom-dialog-container';
-      const dialogRef = this.dialog.open(SignupComponent, dialogConfig);
-
-      this.isDialogOpen = true;
-
-      dialogRef.afterClosed().subscribe(() => {
-        this.isDialogOpen = false;
-      });
+      dialogConfig.autoFocus = false;
+      this.dialogRefSignup = this.dialog.open(SignupComponent, dialogConfig);
     }
   }
 }

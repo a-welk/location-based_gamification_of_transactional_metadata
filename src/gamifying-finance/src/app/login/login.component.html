@@ -7,7 +7,9 @@
     <div class="form-group">
       <input type="password" id="password" name="password" [(ngModel)]="password" required placeholder="Password">
     </div>
-
-    <button type="submit">Login</button>
+    <div class="buttonContainer">
+      <button type="button" (click)="closeDialog()">Close</button>
+      <button type="submit">Login</button>
+    </div>
   </form>
 </div>

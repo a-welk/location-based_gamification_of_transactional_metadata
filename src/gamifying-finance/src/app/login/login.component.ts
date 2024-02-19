@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { HttpService } from '../services/http.service';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { MatDialogRef } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-login',
@@ -20,7 +21,7 @@ export class LoginComponent {
   email: string = '';
   password: string = '';
 
-  constructor(private HttpService: HttpService, private AuthService: AuthService, private Router: Router) {}
+  constructor(private dialogRef: MatDialogRef<LoginComponent>, private AuthService: AuthService, private Router: Router) {}
 
   login() {
     this.AuthService.login(this.email, this.password)
@@ -34,5 +35,8 @@ export class LoginComponent {
         },
         error: error => console.error('Error!', error)
       });
+  }
+  closeDialog(): void {
+    this.dialogRef.close();
   }
 }

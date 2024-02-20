@@ -21,18 +21,18 @@ Status Report Template: https://github.com/VCU-CS-Capstone/0000---Capstone-Templ
 | Week 9 Status Report |Setup AWS IAM roles for user sign ins|Continue research on how AWS techs work together| |
 | Week 10 Status Report |Start figma wireframe for frontend|Finished figma, final decision on what techs to use| |
 | Week 11 Status Report |Write scripts to process the dataset|Setup AWS DynamoDB| |
-| Week 12 Status Report | | | |
-| Week 13 Status Report | | | |
-| Week 14 Status Report | | | |
-| Week 15 Status Report | | | |
+| Week 12 Status Report |Start writing functions for data retrieval from DB| |Many problems with DB retrieval|
+| Week 13 Status Report |Write insert functions for DB| |how to increment ID's when dynamoDB does not support auto-increment?|
+| Week 14 Status Report |Continue working on database insertion and retrieval, work on homepage|Created initial homepage|Making homepage look pretty|
+| Week 15 Status Report |Work on website homepage and signup button| |need to keep recreating our DB tables with new attributes|
 | Week 16 Status Report | | | |
 
 ## 2nd Semester
 
 | Document | Tasks | Accomplishments| Issues |
 |---|---|---|---|
-| Week 1 Status Report | | | |
-| Week 2 Status Report | | | |
+| Week 1 Status Report |Recreate ALL tables with UUID instead of standard number ID|Tables recreated| |
+| Week 2 Status Report |Restructure data retrieval and insertion functions to work with UUID| |UUID is confusing|
 | Week 3 Status Report | | | |
 | Week 4 Status Report | | | |
 | Week 5 Status Report | | | |

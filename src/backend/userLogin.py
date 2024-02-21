@@ -35,7 +35,7 @@ def query_user_login(email, password):
     try:
         items = response['Items']
         UserID = items[0]['UserUUID']
-        hashed_password = items[0]['Password']
+        hashed_password = (items[0]['Password'])
         if bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8')):
             print(f"Successfully logged into {email}")
             return UserID
@@ -90,11 +90,6 @@ def get_user_transaction(UserID):
             transactionZipcode.append("N/A")
         
     #formats all transaction data and puts it into output.json
-            """
-    zipped = list(zip(userTransactions, transactionAmount, transactionDay, transactionMonth, transactionYear, transactionTime, transactionMerchantID, transactionMCC, transactionLat, transactionLong, transactionZipcode))
-    json_data = ',\n'.join(json.dumps(t, separators=(',', ':')) for t in zipped)
-    with open('output.json', 'w') as json_file:
-        json_file.write(json_data)"""
     data_list = []
 
     for i in range(len(userTransactions)):
@@ -146,10 +141,11 @@ def insert_transaction(amount, card, time, day, month, year, isFraud, MCC, merch
         }
     )
 
+
 #inserts new users into Users table
 def insert_user(address, apartment, birthMonth, birthYear, city, age, email, FICOscore, gender, lat, long, numCards, password, perCapitaIncome, name, retirementAge, state, debt, annualIncome, zipcode):
     table = dynamodb.Table('Users')
-    password = bcrypt.hash(password, 12)
+    password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
     userID = uuid.uuid4()
     userID = str(userID)
     response = table.put_item(
@@ -178,6 +174,25 @@ def insert_user(address, apartment, birthMonth, birthYear, city, age, email, FIC
         }
     )
 
+def insert_user_onboarding(name, email, password, age, retirement_age, annual_income, zipcode, budget, budget_choice):
+    table = dynamodb.Table('Users')
+    password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    userID = str(uuid.uuid4())
+    response = table.put_item(
+         Item={
+              'UserUUID': userID,
+              'Person': name,
+              'Email': email,
+              'Password': password,
+              'Current Age': age,
+              'Retirement Age': retirement_age,
+              'Yearly Income - Person': annual_income,
+              'Zipcode': zipcode,
+              'Budget': budget,
+              'Budget Choice': budget_choice
+         }
+    )
+
 def insert_merchant(latitude, longitude, zipcode):
     table = dynamodb.Table('Merchants')
     merchantUUID = uuid.uuid4()
@@ -189,7 +204,7 @@ def insert_merchant(latitude, longitude, zipcode):
             'longitude': longitude,
             'zip': zipcode
           }
-    )    
+    )
 
 def insert_card(date_open, brand, card_index, card_number, dark_web, type, cards_issued, credit_limit, CVV, expiration, has_chip, UserUUID, pin_last_changed):
       table = dynamodb.Table('Cards')
@@ -213,6 +228,15 @@ def insert_card(date_open, brand, card_index, card_number, dark_web, type, cards
             }
       )
 
+def get_user_cards(UserID):
+     table = dynamodb.Table('Cards')
+     response = table.query(
+          IndexName = 'USERUUID-index',
+          KeyConditionExpression = Key('USERUUID').eq(UserID)
+     )
+     items = response['Items']
+     return(items)
+
 
 """
 STILL NEED FUNCTIONS FOR:
@@ -226,12 +250,15 @@ STILL NEED TO:
     """
 
 def main():
-    UserID = query_user_login("cristiano.morris@gmail.com", "CristianoMorris123") #just a sample login
+    #UserID = query_user_login("gunter.welk@gmail.com", "gunterthecat!") #just a sample login
+    #UserID = query_user_login("chana.bennett@gmail.com", "ChanaBennett123")
+    get_user_cards("9967fa58-cfd9-4182-990a-9946054d303e")
     #UserID = uuid.uuid4
-    get_user_transaction(UserID)
+    #get_user_transaction(UserID)
     #insert_transaction(420.69, 0, "3:32", 22, 11, 2021, "No", 5541, "Richmond", "VA", '2e62a0d3-ac63-4077-8784-7dda1c678927', "Chip Transaction", 'b84d7a7e-e05e-4505-870d-d6d229f9d6b0', 23220)
     #insert_user("1411 Grove Ave", "11", "August", "2001", "Richmond", 22, "welka@vcu.edu", 750, "male", "37.54873869465798", "37.54873869465798, -77.45798251781274", 
                 #2, "AlexWelk123", 10000, "Alex Welk", 70, "VA", 0, 10000, 23220)
+    #insert_user_onboarding("gunter.welk@gmail.com", "gunterthecat!", 10, 19, 6900, 23220, 50000, "50-30-20")
 
     
     

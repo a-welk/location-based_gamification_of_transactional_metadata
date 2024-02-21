@@ -1,21 +1,25 @@
 import boto3
-from dotenv import load_dotenv
+#from dotenv import load_dotenv
 from decimal import *
 from boto3.dynamodb.conditions import Key, Attr
 import os
 import json
 import uuid
 import bcrypt
-load_dotenv()
-config = {
+from flask import Flask
+from flask_cors import CORS
+#load_dotenv()
+"""config = {
   'accessKey': os.getenv("key"),
   'secretKey': os.getenv("id"),
-}
-print(config)
+} """
+#print(config)
+app = Flask(__name__)
+CORS(app)
 
 dynamodb = boto3.resource('dynamodb',
-                          aws_access_key_id='accessKey', #insert YOUR aws access key here
-                          aws_secret_access_key='secretKey', #insert YOUR aws sec
+                          aws_access_key_id='AKIA42KZIHZE3NIJXCJ2', #insert YOUR aws access key here
+                          aws_secret_access_key='ULV7X90uwRxEu72rf4xDCoXmZXltARqt7TJ9zRkx', #insert YOUR aws sec
                           region_name="us-east-1")
 # Global Transaction table variables
 transactionID = [] 
@@ -55,7 +59,7 @@ def query_user_login(email, password):
           return False
     
     
-#queries transactions table for all the transactions of a given userID
+#queries transactions table for all the transactions of a given userID - not working rn bc of UserUUID disputes
 def get_user_transaction(UserID):
     #attempt at pagination in order to retrieve ALL the transactions from designated user
     paginator = dynamodb.meta.client.get_paginator('query')
@@ -98,11 +102,6 @@ def get_user_transaction(UserID):
             transactionZipcode.append("N/A")
         
     #formats all transaction data and puts it into output.json
-            """
-    zipped = list(zip(userTransactions, transactionAmount, transactionDay, transactionMonth, transactionYear, transactionTime, transactionMerchantID, transactionMCC, transactionLat, transactionLong, transactionZipcode))
-    json_data = ',\n'.join(json.dumps(t, separators=(',', ':')) for t in zipped)
-    with open('output.json', 'w') as json_file:
-        json_file.write(json_data)"""
     data_list = []
 
     for i in range(len(userTransactions)):
@@ -158,14 +157,81 @@ def insert_user(address, apartment, birthMonth, birthYear, city, age, email, FIC
             'Zipcode': zipcode
         }
     )
+
+
+def insert_user_onboarding(email, password, age, retirement_age, annual_income, zipcode, budget, budget_choice):
+    table = dynamodb.Table('Users')
+    password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    userID = str(uuid.uuid4())
+    response = table.put_item(
+         Item={
+              'UserUUID': userID,
+              'Email': email,
+              'Password': password,
+              'Current Age': age,
+              'Retirement Age': retirement_age,
+              'Yearly Income - Person': annual_income,
+              'Zipcode': zipcode,
+              'Budget': budget,
+              'Budget Choice': budget_choice
+         }
+    )
+
+
+def insert_card(date_open, brand, card_index, card_number, dark_web, type, cards_issued, credit_limit, CVV, expiration, has_chip, UserUUID, pin_last_changed):
+      table = dynamodb.Table('Cards')
+      cardUUID = str(uuid.uuid4())
+      response = table.put_item(
+            Item={
+               'CardUUID': cardUUID,
+               'Acct Open Date': date_open,
+               'Card Brand': brand,
+               'CARD INDEX': card_index,
+               'Card Number': card_number,
+               'Card on Dark Web': dark_web,
+               'Card Type': type,
+               'Cards Issued': cards_issued,
+               'Credit Limit': credit_limit,
+               'CVV': CVV,
+               'Expires': expiration,
+               'Has Chip': has_chip,
+               'USERUUID': UserUUID,
+               'Year PIN last Changed': pin_last_changed
+            }
+      )
+
+def get_user_cards(UserID):
+     table = dynamodb.Table('Cards')
+     response = table.query(
+          IndexName = 'USERUUID-index',
+          KeyConditionExpression = Key('USERUUID').eq(UserID)
+     )
+     items = response['Items']
+     print(items)
+
+
+def insert_merchant(latitude, longitude, zipcode):
+    table = dynamodb.Table('Merchants')
+    merchantUUID = uuid.uuid4()
+    merchantUUID = str(merchantUUID)
+    response = table.put_item(
+        Item={
+            'MerchantUUID': merchantUUID,
+            'latitude': latitude,
+            'longitude': longitude,
+            'zip': zipcode
+          }
+    )
                                         
         
         
 def main():
-    UserID = query_user_login("Kiera.Allen@gmail.com", "KieraAllen123") ##just a sample login
-    get_user_transaction(str(UserID))
+    UserID = query_user_login("gunter.welk@gmail.com", "GunterWelk123") ##just a sample login
+    #get_user_transaction(str(UserID))
     #insert_transaction(44.21, 0, "3:32", 22, 11, 2021, "No", 5541, "Richmond", "VA", 9, "Chip Transaction", 731, 23220)
     
     
 if __name__=="__main__":
     main()
+    app.debug = True;
+    app.run()

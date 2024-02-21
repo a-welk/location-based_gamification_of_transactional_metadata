@@ -235,7 +235,7 @@ def get_user_cards(UserID):
           KeyConditionExpression = Key('USERUUID').eq(UserID)
      )
      items = response['Items']
-     return(items)
+     print(items)
 
 
 """
@@ -251,10 +251,10 @@ STILL NEED TO:
 
 def main():
     #UserID = query_user_login("gunter.welk@gmail.com", "gunterthecat!") #just a sample login
-    #UserID = query_user_login("chana.bennett@gmail.com", "ChanaBennett123")
-    get_user_cards("9967fa58-cfd9-4182-990a-9946054d303e")
+    #UserID = query_user_login("vanessa.anderson@gmail.com", "VanessaAnderson123")
+    #get_user_cards(str(UserID))
     #UserID = uuid.uuid4
-    #get_user_transaction(UserID)
+    get_user_transaction("85d0f024-bbac-411b-b0fb-69bbe3682cf2")
     #insert_transaction(420.69, 0, "3:32", 22, 11, 2021, "No", 5541, "Richmond", "VA", '2e62a0d3-ac63-4077-8784-7dda1c678927', "Chip Transaction", 'b84d7a7e-e05e-4505-870d-d6d229f9d6b0', 23220)
     #insert_user("1411 Grove Ave", "11", "August", "2001", "Richmond", 22, "welka@vcu.edu", 750, "male", "37.54873869465798", "37.54873869465798, -77.45798251781274", 
                 #2, "AlexWelk123", 10000, "Alex Welk", 70, "VA", 0, 10000, 23220)

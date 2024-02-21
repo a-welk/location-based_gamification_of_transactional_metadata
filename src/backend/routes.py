@@ -1,18 +1,23 @@
+import bcrypt
 import boto3
 from dotenv import load_dotenv
 from decimal import *
 from boto3.dynamodb.conditions import Key, Attr
 import os
-load_dotenv()
-config = {
-  'accessKey': os.getenv("key"),
-  'secretKey': os.getenv("id"),
-}
-print(config)
+from flask import Flask
+from flask_cors import CORS
+
+# load_dotenv()
+# config = {
+#   'accessKey': os.environ.get("accessKey"),
+#   'secretKey': os.environ.get("secretKey"),
+# }
+app = Flask(__name__)
+CORS(app)
 
 dynamodb = boto3.resource('dynamodb',
-                          aws_access_key_id='accessKey', #insert YOUR aws access key here
-                          aws_secret_access_key='secretKey', #insert YOUR aws sec
+                          aws_access_key_id="AKIA42KZIHZE3NIJXCJ2", #insert YOUR aws access key here
+                          aws_secret_access_key="ULV7X90uwRxEu72rf4xDCoXmZXltARqt7TJ9zRkx", #insert YOUR aws sec
                           region_name="us-east-1")
 # Global Transaction table variables
 transactionID = [] 
@@ -31,17 +36,15 @@ items = []
 
 
 def query_user_login(email, password):
-   # email = request.form['email']
-   # password = request.form['password']
-    
     table = dynamodb.Table('Users')
     response = table.query(
         IndexName = 'Email-index',
         KeyConditionExpression = Key('Email').eq(email)
     )
     items = response['Items']
-    UserID = items[0]['User ID']
-    if password == items[0]['Password (unhashed)']:
+    UserID = items[0]['UserUUID']
+    hashed_password = items[0]['Password']
+    if bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8')):
         print(f"Successfully logged into {email}")
         return UserID
     else:
@@ -132,10 +135,11 @@ def insert_transaction(amount, card, time, day, month, year, isFraud, MCC, merch
         
         
 def main():
-    UserID = query_user_login("Kiera.Allen@gmail.com", "KieraAllen123") ##just a sample login
-    get_user_transaction(str(UserID))
+    UserID = query_user_login("cristiano.morris@gmail.com", "CristianoMorris123") ##just a sample login
+    # get_user_transaction(str(UserID))
     #insert_transaction(44.21, 0, "3:32", 22, 11, 2021, "No", 5541, "Richmond", "VA", 9, "Chip Transaction", 731, 23220)
     
     
 if __name__=="__main__":
-    main()
+    app.debug=True
+    app.run()

@@ -28,6 +28,8 @@ export class LoginComponent {
       .subscribe({
         next: response => {
           if (response.token) {
+            console.log(this.email)
+            console.log(this.password)
             console.log('Successfully logged in! Token received:', response.token);
             this.Router.navigate(['/dashboard'])
           }

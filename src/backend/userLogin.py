@@ -32,27 +32,28 @@ def query_user_login(email, password):
         IndexName = 'Email-index',
         KeyConditionExpression = Key('Email').eq(email)
     )
-    items = response['Items']
-    UserID = items[0]['UserUUID']
-    hashed_password = items[0]['Password']
-    if bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8')):
-        print(f"Successfully logged into {email}")
-        return UserID
-    else:
-        print("Invalid user login credentials")
-        return False
-    
+    try:
+        items = response['Items']
+        UserID = items[0]['UserUUID']
+        hashed_password = (items[0]['Password'])
+        if bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8')):
+            print(f"Successfully logged into {email}")
+            return UserID
+        else:
+            print("Invalid user login credentials")
+            return False
+    except IndexError as IE:
+          print("Invalid user login credentials")
+          return False
     
     
 #queries transactions table for all the transactions of a given userID
 def get_user_transaction(UserID):
     #attempt at pagination in order to retrieve ALL the transactions from designated user
-    got_items = []
     paginator = dynamodb.meta.client.get_paginator('query')
     for page in paginator.paginate(TableName='Transactions',
                                    IndexName = 'UserUUID-index',
                                    KeyConditionExpression= Key('UserUUID').eq(UserID)):
-                                        got_items += page['Items']
                                         this_page = page['Items']
                                         for x in range(len(this_page)):
                                             userTransactions.append(this_page[x]['TransactionUUID'])
@@ -89,30 +90,36 @@ def get_user_transaction(UserID):
             transactionZipcode.append("N/A")
         
     #formats all transaction data and puts it into output.json
-    zipped = list(zip(userTransactions, transactionAmount, transactionDay, transactionMonth, transactionYear, transactionTime, transactionMerchantID, transactionMCC, transactionLat, transactionLong, transactionZipcode))
-    json_data = ',\n'.join(json.dumps(t, separators=(',', ':')) for t in zipped)
+    data_list = []
+
+    for i in range(len(userTransactions)):
+        data_dict = {
+            "transactionID": userTransactions[i],
+            "transactionAmount": transactionAmount[i],
+            "transactionDay": transactionDay[i],
+            "transactionMonth": transactionMonth[i],
+            "transactionYear": transactionYear[i],
+            "transactionTime": transactionTime[i],
+            "transactionMerchantID": transactionMerchantID[i],
+            "transactionMCC": transactionMCC[i],
+            "transactionLat": transactionLat[i],
+            "transactionLong": transactionLong[i],
+            "transactionZipcode": transactionZipcode[i],
+        }
+
+        data_list.append(data_dict)
+
+    json_data = json.dumps(data_list, separators=(',', ':'), indent=2)
+
     with open('output.json', 'w') as json_file:
         json_file.write(json_data)
-                                  
-"""
-    print(transactionAmount)
-    print(transactionTime)
-    print(transactionDay)
-    print(transactionMonth)
-    print(userTransactions)
-    print(transactionMerchantID)
-    print(transactionMCC)
-    print(transactionLat)
-    print(transactionLong)
-    print(transactionZipcode)"""
+
     
 #inserts a new transaction into the transaction table
 def insert_transaction(amount, card, time, day, month, year, isFraud, MCC, merchantCity, merchantState, merchantID, chip, userID, zipcode):
     amount = str(amount)
     table = dynamodb.Table('Transactions')
     transactionID = uuid.uuid4()
-    #merchantID = uuid.UUID(merchantID)
-    #userID = uuid.UUID(userID)
     transactionID = str(transactionID)
     response = table.put_item(
         Item={
@@ -134,17 +141,13 @@ def insert_transaction(amount, card, time, day, month, year, isFraud, MCC, merch
         }
     )
 
+
 #inserts new users into Users table
 def insert_user(address, apartment, birthMonth, birthYear, city, age, email, FICOscore, gender, lat, long, numCards, password, perCapitaIncome, name, retirementAge, state, debt, annualIncome, zipcode):
     table = dynamodb.Table('Users')
-    """
-    client = boto3.client('dynamodb', aws_access_key_id='AKIA42KZIHZE3NIJXCJ2', aws_secret_access_key='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', region_name='us-east-1')
-    response = client.describe_table(TableName='Users')
-    userID = response['Table']['ItemCount']
-    userID = userID + 1
-    """
-    password = bcrypt.hash(password, 12)
+    password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
     userID = uuid.uuid4()
+    userID = str(userID)
     response = table.put_item(
         Item={
             'UserUUID': userID,
@@ -169,16 +172,93 @@ def insert_user(address, apartment, birthMonth, birthYear, city, age, email, FIC
             'Yearly Income - Person': annualIncome,
             'Zipcode': zipcode
         }
-    )     
+    )
+
+def insert_user_onboarding(name, email, password, age, retirement_age, annual_income, zipcode, budget, budget_choice):
+    table = dynamodb.Table('Users')
+    password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    userID = str(uuid.uuid4())
+    response = table.put_item(
+         Item={
+              'UserUUID': userID,
+              'Person': name,
+              'Email': email,
+              'Password': password,
+              'Current Age': age,
+              'Retirement Age': retirement_age,
+              'Yearly Income - Person': annual_income,
+              'Zipcode': zipcode,
+              'Budget': budget,
+              'Budget Choice': budget_choice
+         }
+    )
+
+def insert_merchant(latitude, longitude, zipcode):
+    table = dynamodb.Table('Merchants')
+    merchantUUID = uuid.uuid4()
+    merchantUUID = str(merchantUUID)
+    response = table.put_item(
+        Item={
+            'MerchantUUID': merchantUUID,
+            'latitude': latitude,
+            'longitude': longitude,
+            'zip': zipcode
+          }
+    )
+
+def insert_card(date_open, brand, card_index, card_number, dark_web, type, cards_issued, credit_limit, CVV, expiration, has_chip, UserUUID, pin_last_changed):
+      table = dynamodb.Table('Cards')
+      cardUUID = str(uuid.uuid4())
+      response = table.put_item(
+            Item={
+               'CardUUID': cardUUID,
+               'Acct Open Date': date_open,
+               'Card Brand': brand,
+               'CARD INDEX': card_index,
+               'Card Number': card_number,
+               'Card on Dark Web': dark_web,
+               'Card Type': type,
+               'Cards Issued': cards_issued,
+               'Credit Limit': credit_limit,
+               'CVV': CVV,
+               'Expires': expiration,
+               'Has Chip': has_chip,
+               'USERUUID': UserUUID,
+               'Year PIN last Changed': pin_last_changed
+            }
+      )
+
+def get_user_cards(UserID):
+     table = dynamodb.Table('Cards')
+     response = table.query(
+          IndexName = 'USERUUID-index',
+          KeyConditionExpression = Key('USERUUID').eq(UserID)
+     )
+     items = response['Items']
+     print(items)
+
+
+"""
+STILL NEED FUNCTIONS FOR:
+    update functions for each attribute in user?
+    get card information? what for?
+    get specific merchant info?
         
-        
+STILL NEED TO:
+    add exception handling
+    recreate users table with preferences?
+    """
+
 def main():
-    #UserID = query_user_login("cristiano.morris@gmail.com", "CristianoMorris123") #just a sample login
+    #UserID = query_user_login("gunter.welk@gmail.com", "gunterthecat!") #just a sample login
+    #UserID = query_user_login("vanessa.anderson@gmail.com", "VanessaAnderson123")
+    #get_user_cards(str(UserID))
     #UserID = uuid.uuid4
-    #get_user_transaction("1c146799-2c2c-4a93-9dea-7936ae9c3f41")
-    insert_transaction(420.69, 0, "3:32", 22, 11, 2021, "No", 5541, "Richmond", "VA", '2e62a0d3-ac63-4077-8784-7dda1c678927', "Chip Transaction", 'b84d7a7e-e05e-4505-870d-d6d229f9d6b0', 23220)
+    get_user_transaction("85d0f024-bbac-411b-b0fb-69bbe3682cf2")
+    #insert_transaction(420.69, 0, "3:32", 22, 11, 2021, "No", 5541, "Richmond", "VA", '2e62a0d3-ac63-4077-8784-7dda1c678927', "Chip Transaction", 'b84d7a7e-e05e-4505-870d-d6d229f9d6b0', 23220)
     #insert_user("1411 Grove Ave", "11", "August", "2001", "Richmond", 22, "welka@vcu.edu", 750, "male", "37.54873869465798", "37.54873869465798, -77.45798251781274", 
                 #2, "AlexWelk123", 10000, "Alex Welk", 70, "VA", 0, 10000, 23220)
+    #insert_user_onboarding("gunter.welk@gmail.com", "gunterthecat!", 10, 19, 6900, 23220, 50000, "50-30-20")
 
     
     

@@ -1,11 +1,15 @@
+import json
+import uuid
 import bcrypt
 import boto3
 #from dotenv import load_dotenv
 from decimal import *
 from boto3.dynamodb.conditions import Key, Attr
 import os
-from flask import Flask
+from flask import Flask, jsonify, request
 from flask_cors import CORS
+from decouple import config
+import jwt
 
 # load_dotenv()
 # config = {
@@ -14,6 +18,7 @@ from flask_cors import CORS
 # }
 app = Flask(__name__)
 CORS(app)
+app.config['SECRET_KEY'] = config('SECRET_KEY')
 
 dynamodb = boto3.resource('dynamodb',
                           aws_access_key_id="AKIA42KZIHZE3NIJXCJ2", #insert YOUR aws access key here
@@ -36,7 +41,10 @@ items = []
 
 
 #queries the user table given an email and password and determines if the password is correct - need to add code for cases where email is not found
-def query_user_login(email, password):
+@app.route('/login', methods=['POST'])
+def query_user_login():
+    email = request.json.get('email')
+    password = request.json.get('password')
     table = dynamodb.Table('Users')
     response = table.query(
         IndexName = 'Email-index',
@@ -47,14 +55,13 @@ def query_user_login(email, password):
         UserID = items[0]['UserUUID']
         hashed_password = (items[0]['Password'])
         if bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8')):
-            print(f"Successfully logged into {email}")
-            return UserID
+            token = jwt.encode({'userID': UserID, 'email': email}, app.config[SECRET_KEY], algorithm='HS256')
+            return jsonify({'success': True, 'token': token, 'message': 'Login successful'}), 200
+
         else:
-            print("Invalid user login credentials")
-            return False
+            return jsonify({'success': False, 'message': 'Invalid credentials'})
     except IndexError as IE:
-          print("Invalid user login credentials")
-          return False
+          return jsonify({'success': False, 'message': 'Invalid credentials'})
     
     
 #queries transactions table for all the transactions of a given userID - not working rn bc of UserUUID disputes

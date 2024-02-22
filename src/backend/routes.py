@@ -158,7 +158,7 @@ def insert_user(address, apartment, birthMonth, birthYear, city, age, email, FIC
         }
     )
 
-
+#inserts new user with just inboarding information
 def insert_user_onboarding(email, password, age, retirement_age, annual_income, zipcode, budget, budget_choice):
     table = dynamodb.Table('Users')
     password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
@@ -177,7 +177,7 @@ def insert_user_onboarding(email, password, age, retirement_age, annual_income, 
          }
     )
 
-
+#inserts card with every attribute
 def insert_card(date_open, brand, card_index, card_number, dark_web, type, cards_issued, credit_limit, CVV, expiration, has_chip, UserUUID, pin_last_changed):
       table = dynamodb.Table('Cards')
       cardUUID = str(uuid.uuid4())
@@ -200,6 +200,7 @@ def insert_card(date_open, brand, card_index, card_number, dark_web, type, cards
             }
       )
 
+#gets all the cards for a given UserID
 def get_user_cards(UserID):
      table = dynamodb.Table('Cards')
      response = table.query(
@@ -209,7 +210,7 @@ def get_user_cards(UserID):
      items = response['Items']
      print(items)
 
-
+#inserts merchants into merchants table
 def insert_merchant(latitude, longitude, zipcode):
     table = dynamodb.Table('Merchants')
     merchantUUID = uuid.uuid4()

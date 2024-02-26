@@ -56,7 +56,7 @@ def query_user_login():
         hashed_password = (items[0]['Password'])
         if bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8')):
             token = jwt.encode({'userID': UserID, 'email': email}, app.config[SECRET_KEY], algorithm='HS256')
-            return jsonify({'success': True, 'token': token, 'message': 'Login successful'}), 200
+            return jsonify({'token': token}), 200
 
         else:
             return jsonify({'success': False, 'message': 'Invalid credentials'})

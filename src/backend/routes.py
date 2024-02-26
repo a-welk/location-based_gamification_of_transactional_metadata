@@ -1,7 +1,7 @@
-import json
-import uuid
 import bcrypt
 import boto3
+import uuid
+import json
 #from dotenv import load_dotenv
 from decimal import *
 from boto3.dynamodb.conditions import Key, Attr
@@ -41,6 +41,26 @@ items = []
 
 
 #queries the user table given an email and password and determines if the password is correct - need to add code for cases where email is not found
+# @app.route('/login', methods=['POST'])
+# def query_user_login():
+#     data = request.json
+#     email = data['email']
+#     password = data['password']
+#     table = dynamodb.Table('Users')
+#     response = table.query(
+#         IndexName='Email-index',
+#         KeyConditionExpression=Key('Email').eq(email)
+#     )
+#     items = response['Items']
+#     if not items:
+#         return jsonify({'error': 'User not found', 'status': 404}), 404
+#     if password == items[0]['Password (unhashed)']:
+#         # return jsonify({'status': '200'})
+#         userID = int(items[0]['User ID'])
+#         token = jwt.encode({'userId': userID, 'email': email}, app.config['SECRET_KEY'], algorithm='HS256')
+#         return jsonify({'token': token}), 200
+#     return jsonify({'error': 'Invalid credentials', 'status': 401}), 401
+
 @app.route('/login', methods=['POST'])
 def query_user_login():
     email = request.json.get('email')
@@ -50,18 +70,43 @@ def query_user_login():
         IndexName = 'Email-index',
         KeyConditionExpression = Key('Email').eq(email)
     )
+    items = response['Items']
+    if not items:
+        return jsonify({'error': 'User not found', 'status': 404}), 404
     try:
-        items = response['Items']
         UserID = items[0]['UserUUID']
         hashed_password = (items[0]['Password'])
         if bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8')):
-            token = jwt.encode({'userID': UserID, 'email': email}, app.config[SECRET_KEY], algorithm='HS256')
+            # return jsonify({'status': '200'})
+            token = jwt.encode({'userID': UserID, 'email': email}, app.config['SECRET_KEY'], algorithm='HS256')
             return jsonify({'token': token}), 200
-
         else:
-            return jsonify({'success': False, 'message': 'Invalid credentials'})
+            return jsonify({'error': 'Invalid credentials', 'status': 401}), 401
     except IndexError as IE:
-          return jsonify({'success': False, 'message': 'Invalid credentials'})
+          print("Invalid user login credentials")
+          return False
+        
+
+# def query_user_login(email, password):
+#     table = dynamodb.Table('Users')
+#     response = table.query(
+#         IndexName = 'Email-index',
+#         KeyConditionExpression = Key('Email').eq(email)
+#     )
+#     try:
+#         items = response['Items']
+#         UserID = items[0]['UserUUID']
+#         hashed_password = (items[0]['Password'])
+#         if bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8')):
+#             print(f"Successfully logged into {email}")
+#             return UserID
+#         else:
+#             print("Invalid user login credentials")
+#             return False
+#     except IndexError as IE:
+#           print("Invalid user login credentials")
+#           return False
+
     
     
 #queries transactions table for all the transactions of a given userID - not working rn bc of UserUUID disputes
@@ -240,4 +285,3 @@ def main():
 if __name__=="__main__":
     app.debug=True
     app.run()
-    #main()

@@ -115,6 +115,55 @@ def get_user_transaction(UserID):
     with open('output.json', 'w') as json_file:
         json_file.write(json_data)
 
+
+def test_transactions(UserID):
+    gotItems = []
+    merchitems = []
+    data_list = []
+    paginator = dynamodb.meta.client.get_paginator('query')
+    for page in paginator.paginate(TableName='Transaction',
+                                   IndexName = 'UserUUID-index',
+                                   KeyConditionExpression= Key('UserUUID').eq(UserID)):
+                                        gotItems.extend(page['Items'])
+    for i in range(len(gotItems)):
+        table = dynamodb.Table('Merchants')
+        response = table.query(
+            KeyConditionExpression = Key('MerchantUUID').eq(gotItems[i]['MerchantUUID'])
+        )
+        merchitems = response['Items']
+        try:
+              thing = merchitems[0]['latitude']
+        except KeyError as ke:
+              merchitems[0]['latitude'] = "N/A"
+        try:
+              thing = merchitems[0]['longitude']
+        except KeyError as ke:
+              merchitems[0]['longitude'] = "N/A"
+        try:
+              thing = merchitems[0]['zip']
+        except KeyError as ke:
+              merchitems[0]['zip'] = "N/A"
+        data_dict = {
+            "transactionID": gotItems[i]['TransactionUUID'],
+            "transactionAmount": gotItems[i]['Amount'],
+            "transactionDay": gotItems[i]['Day'],
+            "transactionMonth": gotItems[i]['Month'],
+            "transactionYear": gotItems[i]['Year'],
+            "transactionTime": gotItems[i]['Time'],
+            "transactionMerchantID": gotItems[i]['MerchantUUID'],
+            "transactionMCC": gotItems[i]['MCC'],
+            "transactionLat": merchitems[0]['latitude'],
+            "transactionLong": merchitems[0]['longitude'],
+            "transactionZipcode": merchitems[0]['zip'],
+        }
+        data_list.append(data_dict)
+
+    json_data = json.dumps(data_list, separators=(',', ':'), indent=2)
+
+    with open('output.json', 'w') as json_file:
+        json_file.write(json_data)
+
+
     
 #inserts a new transaction into the transaction table
 def insert_transaction(amount, card, time, day, month, year, isFraud, MCC, merchantCity, merchantState, merchantID, chip, userID, zipcode):
@@ -296,11 +345,12 @@ STILL NEED TO:
 
 def main():
     UserID = query_user_login("gunter.welk@gmail.com", "guntersnewpassword!") #just a sample login
-    #UserID = query_user_login("vanessa.anderson@gmail.com", "VanessaAnderson123")
+    #UserID = query_user_login("amira.bailey@gmail.com", "AmiraBailey123")
     #get_user_cards(str(UserID))
     #update_user_password("7d49c831-ff33-49bd-9afd-2d061c61ea25", "guntersnewpassword!")
-    print(update_user_income("7d49c831-ff33-49bd-9afd-2d061c61ea25", "69000"))
-    #get_user_transaction("85d0f024-bbac-411b-b0fb-69bbe3682cf2")
+    #print(update_user_income("7d49c831-ff33-49bd-9afd-2d061c61ea25", "69000"))
+    #get_user_transaction(UserID)
+    #test_transactions(UserID)
     #insert_transaction(420.69, 0, "3:32", 22, 11, 2021, "No", 5541, "Richmond", "VA", '2e62a0d3-ac63-4077-8784-7dda1c678927', "Chip Transaction", 'b84d7a7e-e05e-4505-870d-d6d229f9d6b0', 23220)
     #insert_user("1411 Grove Ave", "11", "August", "2001", "Richmond", 22, "welka@vcu.edu", 750, "male", "37.54873869465798", "37.54873869465798, -77.45798251781274", 
                 #2, "AlexWelk123", 10000, "Alex Welk", 70, "VA", 0, 10000, 23220)

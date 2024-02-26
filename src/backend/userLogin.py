@@ -50,8 +50,9 @@ def query_user_login(email, password):
 #queries transactions table for all the transactions of a given userID
 def get_user_transaction(UserID):
     #attempt at pagination in order to retrieve ALL the transactions from designated user
+    gotItems = []
     paginator = dynamodb.meta.client.get_paginator('query')
-    for page in paginator.paginate(TableName='Transactions',
+    for page in paginator.paginate(TableName='Transaction',
                                    IndexName = 'UserUUID-index',
                                    KeyConditionExpression= Key('UserUUID').eq(UserID)):
                                         this_page = page['Items']
@@ -118,7 +119,7 @@ def get_user_transaction(UserID):
 #inserts a new transaction into the transaction table
 def insert_transaction(amount, card, time, day, month, year, isFraud, MCC, merchantCity, merchantState, merchantID, chip, userID, zipcode):
     amount = str(amount)
-    table = dynamodb.Table('Transactions')
+    table = dynamodb.Table('Transaction')
     transactionID = uuid.uuid4()
     transactionID = str(transactionID)
     response = table.put_item(
@@ -140,6 +141,8 @@ def insert_transaction(amount, card, time, day, month, year, isFraud, MCC, merch
             'Zip': zipcode
         }
     )
+    status_code = {"status_code": 200}
+    return json.dumps(status_code)
 
 
 #inserts new users into Users table
@@ -237,6 +240,48 @@ def get_user_cards(UserID):
      items = response['Items']
      print(items)
 
+def update_user_password(UserID, password):
+     password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+     table = dynamodb.Table('Users')
+     response = table.update_item(
+          Key={'UserUUID': UserID},
+          UpdateExpression = "set #password = :n",
+          ExpressionAttributeNames={
+               "#password": "Password"
+          },
+          ExpressionAttributeValues={
+               ":n": password
+          }
+     )
+
+def update_user_income(UserID, income):
+     table = dynamodb.Table('Users')
+     response = table.update_item(
+          Key={'UserUUID': UserID},
+          UpdateExpression = "set #income = :n",
+          ExpressionAttributeNames={
+               "#income": "Yearly Income - Person"
+          },
+          ExpressionAttributeValues={
+               ":n": income
+          }
+     )
+     status_code = {"status_code": 200}
+     return (json.dumps(status_code))
+
+def update_user_budget_option(UserID, budget_choice):
+     table = dynamodb.Table('Users')
+     response = table.update_item(
+          Key={'UserUUID': UserID},
+          UpdateExpression = "set #budget_choice = :n",
+          ExpressionAttributeNames={
+               "#budget_choice": "Budget Choice"
+          },
+          ExpressionAttributeValues={
+               ":n": budget_choice
+          }
+     )
+
 
 """
 STILL NEED FUNCTIONS FOR:
@@ -250,11 +295,12 @@ STILL NEED TO:
     """
 
 def main():
-    #UserID = query_user_login("gunter.welk@gmail.com", "gunterthecat!") #just a sample login
+    UserID = query_user_login("gunter.welk@gmail.com", "guntersnewpassword!") #just a sample login
     #UserID = query_user_login("vanessa.anderson@gmail.com", "VanessaAnderson123")
     #get_user_cards(str(UserID))
-    #UserID = uuid.uuid4
-    get_user_transaction("85d0f024-bbac-411b-b0fb-69bbe3682cf2")
+    #update_user_password("7d49c831-ff33-49bd-9afd-2d061c61ea25", "guntersnewpassword!")
+    print(update_user_income("7d49c831-ff33-49bd-9afd-2d061c61ea25", "69000"))
+    #get_user_transaction("85d0f024-bbac-411b-b0fb-69bbe3682cf2")
     #insert_transaction(420.69, 0, "3:32", 22, 11, 2021, "No", 5541, "Richmond", "VA", '2e62a0d3-ac63-4077-8784-7dda1c678927', "Chip Transaction", 'b84d7a7e-e05e-4505-870d-d6d229f9d6b0', 23220)
     #insert_user("1411 Grove Ave", "11", "August", "2001", "Richmond", 22, "welka@vcu.edu", 750, "male", "37.54873869465798", "37.54873869465798, -77.45798251781274", 
                 #2, "AlexWelk123", 10000, "Alex Welk", 70, "VA", 0, 10000, 23220)

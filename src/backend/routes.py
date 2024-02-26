@@ -1,3 +1,4 @@
+import bcrypt
 import boto3
 from flask_cors import CORS
 from flask import Flask, jsonify, request, make_response, session
@@ -39,6 +40,26 @@ def query_user_signup():
               
        )
 
+# @app.route('/login', methods=['POST'])
+# def query_user_login():
+#     data = request.json
+#     email = data['email']
+#     password = data['password']
+#     table = dynamodb.Table('Users')
+#     response = table.query(
+#         IndexName='Email-index',
+#         KeyConditionExpression=Key('Email').eq(email)
+#     )
+#     items = response['Items']
+#     if not items:
+#         return jsonify({'error': 'User not found', 'status': 404}), 404
+#     if password == items[0]['Password (unhashed)']:
+#         # return jsonify({'status': '200'})
+#         userID = int(items[0]['User ID'])
+#         token = jwt.encode({'userId': userID, 'email': email}, app.config['SECRET_KEY'], algorithm='HS256')
+#         return jsonify({'token': token}), 200
+#     return jsonify({'error': 'Invalid credentials', 'status': 401}), 401
+
 @app.route('/login', methods=['POST'])
 def query_user_login():
     data = request.json
@@ -52,31 +73,40 @@ def query_user_login():
     items = response['Items']
     if not items:
         return jsonify({'error': 'User not found', 'status': 404}), 404
-    if password == items[0]['Password (unhashed)']:
-        # return jsonify({'status': '200'})
-        userID = int(items[0]['User ID'])
-        token = jwt.encode({'userId': userID, 'email': email}, app.config['SECRET_KEY'], algorithm='HS256')
-        return jsonify({'token': token}), 200
-    return jsonify({'error': 'Invalid credentials', 'status': 401}), 401
+    try:
+        UserID = items[0]['UserUUID']
+        hashed_password = (items[0]['Password'])
+        if bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8')):
+            # return jsonify({'status': '200'})
+            token = jwt.encode({'userID': UserID, 'email': email}, app.config['SECRET_KEY'], algorithm='HS256')
+            return jsonify({'token': token}), 200
+        else:
+            return jsonify({'error': 'Invalid credentials', 'status': 401}), 401
+    except IndexError as IE:
+          print("Invalid user login credentials")
+          return False
+        
 
-# def query_user_login():
-#     data = request.form
-#     email = data.get('email')
-#     print(email)
-#     password = data.get('password')
+# def query_user_login(email, password):
 #     table = dynamodb.Table('Users')
 #     response = table.query(
 #         IndexName = 'Email-index',
 #         KeyConditionExpression = Key('Email').eq(email)
 #     )
-#     items = response['Items']
-#     UserID = items[0]['User ID']
-#     if password == items[0]['Password (unhashed)']:
-#         print(f"Successfully logged into {email}")
-#         return jsonify({'Status': 'Logged in'})
-#     else:
-#         print("Invalid user login credentials")
-#         return jsonify({'error': 'Invalid user login credentials'}), 401
+#     try:
+#         items = response['Items']
+#         UserID = items[0]['UserUUID']
+#         hashed_password = (items[0]['Password'])
+#         if bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8')):
+#             print(f"Successfully logged into {email}")
+#             return UserID
+#         else:
+#             print("Invalid user login credentials")
+#             return False
+#     except IndexError as IE:
+#           print("Invalid user login credentials")
+#           return False
+
     
 @app.route('/<int:UserID>/transactions', methods=['GET'])
 def get_user_transaction(UserID):
@@ -167,4 +197,3 @@ def dashboard():
 if __name__=="__main__":
     app.debug=True
     app.run()
-    # main()

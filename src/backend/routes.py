@@ -111,70 +111,53 @@ def query_user_login():
     
 #queries transactions table for all the transactions of a given userID - not working rn bc of UserUUID disputes
 def get_user_transaction(UserID):
-    #attempt at pagination in order to retrieve ALL the transactions from designated user
-    paginator = dynamodb.meta.client.get_paginator('query')
-    for page in paginator.paginate(TableName='Transactions',
-                                   IndexName = 'UserUUID-index',
-                                   KeyConditionExpression= Key('UserUUID').eq(UserID)):
-                                        this_page = page['Items']
-                                        for x in range(len(this_page)):
-                                            userTransactions.append(this_page[x]['TransactionUUID'])
-                                            transactionYear.append(this_page[x]['Year'])
-                                            transactionMonth.append(this_page[x]['Month'])
-                                            transactionDay.append(this_page[x]['Day'])
-                                            transactionTime.append(this_page[x]['Time'])
-                                            transactionAmount.append(this_page[x]['Amount'])
-                                            transactionMerchantID.append(this_page[x]['MerchantUUID'])
-                                            transactionMCC.append(this_page[x]['MCC'])
-    #gets merchant information for each merchantID in each transaction                                        
-    for x in range(len(transactionMerchantID)):
+    merchitems = []
+    data_list = []
+    table = dynamodb.Table('Transaction')
+    response = table.query(
+         IndexName = 'UserUUID-index',
+         KeyConditionExpression = Key('UserUUID').eq(UserID)
+    )
+    items = response['Items']
+    for i in range(len(items)):
         table = dynamodb.Table('Merchants')
         response = table.query(
-            KeyConditionExpression = Key('MerchantUUID').eq(transactionMerchantID[x])
+            KeyConditionExpression = Key('MerchantUUID').eq(items[i]['MerchantUUID'])
         )
-        items.extend(response['Items'])
-    
-    #adds each merchant attribute to their respective list
-    for x in range(len(items)):
+        merchitems = response['Items']
         try:
-            transactionLat.append(items[x]['latitude'])
+              thing = merchitems[0]['latitude']
         except KeyError as ke:
-            transactionLat.append("N/A")
-        
+              merchitems[0]['latitude'] = "N/A"
         try:
-            transactionLong.append(items[x]['longitude'])
+              thing = merchitems[0]['longitude']
         except KeyError as ke:
-            transactionLong.append("N/A")
-        
+              merchitems[0]['longitude'] = "N/A"
         try:
-            transactionZipcode.append(items[x]['zip'])
+              thing = merchitems[0]['zip']
         except KeyError as ke:
-            transactionZipcode.append("N/A")
-        
-    #formats all transaction data and puts it into output.json
-    data_list = []
-
-    for i in range(len(userTransactions)):
+              merchitems[0]['zip'] = "N/A"
         data_dict = {
-            "transactionID": userTransactions[i],
-            "transactionAmount": transactionAmount[i],
-            "transactionDay": transactionDay[i],
-            "transactionMonth": transactionMonth[i],
-            "transactionYear": transactionYear[i],
-            "transactionTime": transactionTime[i],
-            "transactionMerchantID": transactionMerchantID[i],
-            "transactionMCC": transactionMCC[i],
-            "transactionLat": transactionLat[i],
-            "transactionLong": transactionLong[i],
-            "transactionZipcode": transactionZipcode[i],
+            "transactionID": items[i]['TransactionUUID'],
+            "transactionAmount": items[i]['Amount'],
+            "transactionDay": items[i]['Day'],
+            "transactionMonth": items[i]['Month'],
+            "transactionYear": items[i]['Year'],
+            "transactionTime": items[i]['Time'],
+            "transactionMerchantID": items[i]['MerchantUUID'],
+            "transactionMCC": items[i]['MCC'],
+            "transactionLat": merchitems[0]['latitude'],
+            "transactionLong": merchitems[0]['longitude'],
+            "transactionZipcode": merchitems[0]['zip'],
         }
-
         data_list.append(data_dict)
 
     json_data = json.dumps(data_list, separators=(',', ':'), indent=2)
 
     with open('output.json', 'w') as json_file:
         json_file.write(json_data)
+
+    return data_list
     
 #inserts new users into Users table
 def insert_user(address, apartment, birthMonth, birthYear, city, age, email, FICOscore, gender, lat, long, numCards, password, perCapitaIncome, name, retirementAge, state, debt, annualIncome, zipcode):
@@ -260,6 +243,33 @@ def get_user_cards(UserID):
      items = response['Items']
      print(items)
 
+def insert_transaction(amount, card, time, day, month, year, isFraud, MCC, merchantCity, merchantState, merchantID, chip, userID, zipcode):
+    amount = str(amount)
+    table = dynamodb.Table('Transaction')
+    transactionID = uuid.uuid4()
+    transactionID = str(transactionID)
+    response = table.put_item(
+        Item={
+            'TransactionUUID': transactionID,
+            'Amount': amount,
+            'Card': card,
+            'Day': day,
+            'Is Fraud?': isFraud,
+            'MCC': MCC,
+            'Merchant City': merchantCity,
+            'Merchant State': merchantState,
+            'MerchantUUID': merchantID,
+            'Month': month,
+            'Time': time,
+            'Use Chip': chip,
+            'UserUUID': userID,
+            'Year': year,
+            'Zip': zipcode
+        }
+    )
+    status_code = {"status_code": 200}
+    return json.dumps(status_code)
+
 #inserts merchants into merchants table
 def insert_merchant(latitude, longitude, zipcode):
     table = dynamodb.Table('Merchants')
@@ -273,6 +283,34 @@ def insert_merchant(latitude, longitude, zipcode):
             'zip': zipcode
           }
     )
+
+def user_leaderboard(zipcode):
+    leaderboard = []
+    table = dynamodb.Table('Users')
+    response = table.query(
+        IndexName = 'Zipcode-index',
+        KeyConditionExpression = Key('Zipcode').eq(zipcode)
+    )
+    items = response['Items']
+
+    for x in range(len(items)):
+        list = get_user_transaction(items[x]['UserUUID'])
+        total = 0.00
+        for y in range(len(list)):
+                try:
+                    amount = list[y]['transactionAmount']
+                    amount = amount.replace('$', '')
+                    total += float(amount)
+                except KeyError as ke:
+                    total += 0;
+        entry = {
+             'UserUUID': items[x]['UserUUID'],
+             'Name': items[x]['Person'],
+             'Total': round(total, 2)
+        }
+        leaderboard.append(entry)
+    leaderboard = sorted(leaderboard, key= operator.itemgetter('Total'))
+    return leaderboard
                                         
         
         

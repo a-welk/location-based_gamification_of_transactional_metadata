@@ -91,3 +91,6 @@
   transition: transform 0.25s ease-out;
 }
 
+.links:hover {
+  cursor: pointer;
+}

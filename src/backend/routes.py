@@ -1,22 +1,29 @@
+import bcrypt
 import boto3
-from flask_cors import CORS
-from flask import Flask, jsonify, request, make_response, session
-import jwt
-from datetime import datetime, timedelta
-from functools import wraps
-from decouple import config
+import uuid
+import json
+#from dotenv import load_dotenv
+from decimal import *
 from boto3.dynamodb.conditions import Key, Attr
+import os
+from flask import Flask, jsonify, request
+from flask_cors import CORS
+from decouple import config
+import jwt
+
+# load_dotenv()
+# config = {
+#   'accessKey': os.environ.get("accessKey"),
+#   'secretKey': os.environ.get("secretKey"),
+# }
+app = Flask(__name__)
+CORS(app)
+app.config['SECRET_KEY'] = config('SECRET_KEY')
 
 dynamodb = boto3.resource('dynamodb',
                           aws_access_key_id="AKIA42KZIHZE3NIJXCJ2", #insert YOUR aws access key here
                           aws_secret_access_key="ULV7X90uwRxEu72rf4xDCoXmZXltARqt7TJ9zRkx", #insert YOUR aws sec
                           region_name="us-east-1")
-
-app = Flask(__name__)
-CORS(app)
-app.config['SECRET_KEY'] = config('SECRET_KEY')
-
-
 # Global Transaction table variables
 transactionID = [] 
 userTransactions = []
@@ -27,144 +34,292 @@ transactionTime = []
 transactionAmount = []
 transactionMerchantID = []
 transactionMCC = []
-tempBudget = 10000
+transactionLat = []
+transactionLong = []
+transactionZipcode = []
+items = []
 
-@app.route('/signup', methods=['POST'])
-def query_user_signup():
-       data = request.json
-       email = data['email']
-       password = data['password']
-       table = dynamodb.Table('Users')
-       response = table.query(
-              
-       )
+
+#queries the user table given an email and password and determines if the password is correct - need to add code for cases where email is not found
+# @app.route('/login', methods=['POST'])
+# def query_user_login():
+#     data = request.json
+#     email = data['email']
+#     password = data['password']
+#     table = dynamodb.Table('Users')
+#     response = table.query(
+#         IndexName='Email-index',
+#         KeyConditionExpression=Key('Email').eq(email)
+#     )
+#     items = response['Items']
+#     if not items:
+#         return jsonify({'error': 'User not found', 'status': 404}), 404
+#     if password == items[0]['Password (unhashed)']:
+#         # return jsonify({'status': '200'})
+#         userID = int(items[0]['User ID'])
+#         token = jwt.encode({'userId': userID, 'email': email}, app.config['SECRET_KEY'], algorithm='HS256')
+#         return jsonify({'token': token}), 200
+#     return jsonify({'error': 'Invalid credentials', 'status': 401}), 401
 
 @app.route('/login', methods=['POST'])
 def query_user_login():
-    data = request.json
-    email = data['email']
-    password = data['password']
+    email = request.json.get('email')
+    password = request.json.get('password')
     table = dynamodb.Table('Users')
     response = table.query(
-        IndexName='Email-index',
-        KeyConditionExpression=Key('Email').eq(email)
+        IndexName = 'Email-index',
+        KeyConditionExpression = Key('Email').eq(email)
     )
     items = response['Items']
     if not items:
         return jsonify({'error': 'User not found', 'status': 404}), 404
-    if password == items[0]['Password (unhashed)']:
-        # return jsonify({'status': '200'})
-        userID = int(items[0]['User ID'])
-        token = jwt.encode({'userId': userID, 'email': email}, app.config['SECRET_KEY'], algorithm='HS256')
-        return jsonify({'token': token}), 200
-    return jsonify({'error': 'Invalid credentials', 'status': 401}), 401
+    try:
+        UserID = items[0]['UserUUID']
+        hashed_password = (items[0]['Password'])
+        if bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8')):
+            # return jsonify({'status': '200'})
+            token = jwt.encode({'userID': UserID, 'email': email}, app.config['SECRET_KEY'], algorithm='HS256')
+            return jsonify({'token': token}), 200
+        else:
+            return jsonify({'error': 'Invalid credentials', 'status': 401}), 401
+    except IndexError as IE:
+          print("Invalid user login credentials")
+          return False
+        
 
-# def query_user_login():
-#     data = request.form
-#     email = data.get('email')
-#     print(email)
-#     password = data.get('password')
+# def query_user_login(email, password):
 #     table = dynamodb.Table('Users')
 #     response = table.query(
 #         IndexName = 'Email-index',
 #         KeyConditionExpression = Key('Email').eq(email)
 #     )
-#     items = response['Items']
-#     UserID = items[0]['User ID']
-#     if password == items[0]['Password (unhashed)']:
-#         print(f"Successfully logged into {email}")
-#         return jsonify({'Status': 'Logged in'})
-#     else:
-#         print("Invalid user login credentials")
-#         return jsonify({'error': 'Invalid user login credentials'}), 401
-    
-@app.route('/<int:UserID>/transactions', methods=['GET'])
-def get_user_transaction(UserID):
-    
-    """
-    table = dynamodb.Table('Transactions')
-    response = table.query(
-        IndexName = 'User-index',
-        KeyConditionExpression = Key('User').eq(UserID)
-        )
-    items = response['Items']
-    print(items) ##printing an empty list so something is probably wrong with the original query but idk what
-  """
-    ##attempt at pagination in order to retrieve ALL the transactions from designated user
-    got_items = []
-    paginator = dynamodb.meta.client.get_paginator('query')
-    data = {}
-    data[UserID] = []
-    arr = []
-    table = dynamodb.Table('Merchants')
-    for page in paginator.paginate(TableName='Transactions',
-                                   IndexName = 'User-index',
-                                   KeyConditionExpression= Key('User').eq(UserID)):
-                                        got_items += page['Items']
-                                        this_page = page['Items']
-                                        for x in range(len(this_page)):
-                                            response = table.query(
-                                                KeyConditionExpression = Key('Merchant ID').eq(this_page[x]['Merchant_ID'])
-                                            )
-                                            items = response['Items']
-                                            transaction = {}
-                                            transaction[this_page[x]['transaction_id']] = {
-                                                    'day' : this_page[x]['Day'],
-                                                    'month' : this_page[x]['Month'],
-                                                    'year' : this_page[x]['Year'],
-                                                    'time' : this_page[x]['Time'],
-                                                    'amount' : this_page[x]['Amount'],
-                                                    'merchant_id' : this_page[x]['Merchant_ID'],
-                                                    'mcc' : this_page[x]['MCC'],
-                                                    'latitude' : items[0]['Latitude'],
-                                                    'longitude' : items[0]['Longitude'],
-                                                    'zipcode' : items[0]['Zipcode']
-                                            }
-                                            arr.append(transaction)
-    data[UserID] = arr
-                                            
-    return jsonify(data)
-    # print(transactionLat)
-    # print(transactionLong)
-    # print(transactionZipcode)
-                                        
-def check_budget(UserID): 
-    get_user_transaction(UserID)
-  
-@app.route('/add_transaction', methods=['POST'])
-def add_transaction():
-    #reference to dynamodb
-    table = dynamodb.Table('Transactions')
-    try: 
-        #getting transaction payload
-        transactions_data = request.get_json()
-        #adding transaction to dynamodb
-        table.append(transactions_data)
-        #print message of completition for testing
-        return jsonify({"status": "success", "message": "Transaction added successfully"})
-    #error handling
-    except Exception as E:
-        return jsonify({"status": "error", "message": str(E)})
+#     try:
+#         items = response['Items']
+#         UserID = items[0]['UserUUID']
+#         hashed_password = (items[0]['Password'])
+#         if bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8')):
+#             print(f"Successfully logged into {email}")
+#             return UserID
+#         else:
+#             print("Invalid user login credentials")
+#             return False
+#     except IndexError as IE:
+#           print("Invalid user login credentials")
+#           return False
 
-@app.route('/dashboard')
-def dashboard():
-    token = request.headers.get('Authorization')
-    try:
-        decoded = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
-        return jsonify({'message': 'Token decoded successfully', 'user': decoded})
-    except jwt.ExpiredSignatureError:
-        return jsonify({'error': 'Token has expired'}), 401
-    except jwt.InvalidTokenError:
-        return jsonify({'error': 'Invalid token'}), 401
     
-    # return jsonify({'state': 'logged in'}), 200
-       
-# def main():
-    # UserID = query_user_login("Kiera.Allen@gmail.com", "KieraAllen123") just a sample login
-    # get_user_transaction(str(UserID))
+    
+#queries transactions table for all the transactions of a given userID - not working rn bc of UserUUID disputes
+def get_user_transaction(UserID):
+    merchitems = []
+    data_list = []
+    table = dynamodb.Table('Transaction')
+    response = table.query(
+         IndexName = 'UserUUID-index',
+         KeyConditionExpression = Key('UserUUID').eq(UserID)
+    )
+    items = response['Items']
+    for i in range(len(items)):
+        table = dynamodb.Table('Merchants')
+        response = table.query(
+            KeyConditionExpression = Key('MerchantUUID').eq(items[i]['MerchantUUID'])
+        )
+        merchitems = response['Items']
+        try:
+              thing = merchitems[0]['latitude']
+        except KeyError as ke:
+              merchitems[0]['latitude'] = "N/A"
+        try:
+              thing = merchitems[0]['longitude']
+        except KeyError as ke:
+              merchitems[0]['longitude'] = "N/A"
+        try:
+              thing = merchitems[0]['zip']
+        except KeyError as ke:
+              merchitems[0]['zip'] = "N/A"
+        data_dict = {
+            "transactionID": items[i]['TransactionUUID'],
+            "transactionAmount": items[i]['Amount'],
+            "transactionDay": items[i]['Day'],
+            "transactionMonth": items[i]['Month'],
+            "transactionYear": items[i]['Year'],
+            "transactionTime": items[i]['Time'],
+            "transactionMerchantID": items[i]['MerchantUUID'],
+            "transactionMCC": items[i]['MCC'],
+            "transactionLat": merchitems[0]['latitude'],
+            "transactionLong": merchitems[0]['longitude'],
+            "transactionZipcode": merchitems[0]['zip'],
+        }
+        data_list.append(data_dict)
+
+    json_data = json.dumps(data_list, separators=(',', ':'), indent=2)
+
+    with open('output.json', 'w') as json_file:
+        json_file.write(json_data)
+
+    return data_list
+    
+#inserts new users into Users table
+def insert_user(address, apartment, birthMonth, birthYear, city, age, email, FICOscore, gender, lat, long, numCards, password, perCapitaIncome, name, retirementAge, state, debt, annualIncome, zipcode):
+    table = dynamodb.Table('Users')
+    password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    userID = uuid.uuid4()
+    userID = str(userID)
+    response = table.put_item(
+        Item={
+            'UserUUID': userID,
+            'Password': password,
+            'Address': address,
+            'Apartment': apartment,
+            'Birth Month': birthMonth,
+            'Birth Year': birthYear,
+            'City': city,
+            'Current Age': age,
+            'Email': email,
+            'FICO Score': FICOscore,
+            'Gender': gender,
+            'Latitude': lat,
+            'Longitude': long,
+            'Nume Credit Cards': numCards,
+            'Per Capita Income - Zipcode': perCapitaIncome,
+            'Person': name,
+            'Retirement Age': retirementAge,
+            'State': state,
+            'Total Debt': debt,
+            'Yearly Income - Person': annualIncome,
+            'Zipcode': zipcode
+        }
+    )
+
+#inserts new user with just inboarding information
+def insert_user_onboarding(email, password, age, retirement_age, annual_income, zipcode, budget, budget_choice):
+    table = dynamodb.Table('Users')
+    password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    userID = str(uuid.uuid4())
+    response = table.put_item(
+         Item={
+              'UserUUID': userID,
+              'Email': email,
+              'Password': password,
+              'Current Age': age,
+              'Retirement Age': retirement_age,
+              'Yearly Income - Person': annual_income,
+              'Zipcode': zipcode,
+              'Budget': budget,
+              'Budget Choice': budget_choice
+         }
+    )
+
+#inserts card with every attribute
+def insert_card(date_open, brand, card_index, card_number, dark_web, type, cards_issued, credit_limit, CVV, expiration, has_chip, UserUUID, pin_last_changed):
+      table = dynamodb.Table('Cards')
+      cardUUID = str(uuid.uuid4())
+      response = table.put_item(
+            Item={
+               'CardUUID': cardUUID,
+               'Acct Open Date': date_open,
+               'Card Brand': brand,
+               'CARD INDEX': card_index,
+               'Card Number': card_number,
+               'Card on Dark Web': dark_web,
+               'Card Type': type,
+               'Cards Issued': cards_issued,
+               'Credit Limit': credit_limit,
+               'CVV': CVV,
+               'Expires': expiration,
+               'Has Chip': has_chip,
+               'USERUUID': UserUUID,
+               'Year PIN last Changed': pin_last_changed
+            }
+      )
+
+#gets all the cards for a given UserID
+def get_user_cards(UserID):
+     table = dynamodb.Table('Cards')
+     response = table.query(
+          IndexName = 'USERUUID-index',
+          KeyConditionExpression = Key('USERUUID').eq(UserID)
+     )
+     items = response['Items']
+     print(items)
+
+def insert_transaction(amount, card, time, day, month, year, isFraud, MCC, merchantCity, merchantState, merchantID, chip, userID, zipcode):
+    amount = str(amount)
+    table = dynamodb.Table('Transaction')
+    transactionID = uuid.uuid4()
+    transactionID = str(transactionID)
+    response = table.put_item(
+        Item={
+            'TransactionUUID': transactionID,
+            'Amount': amount,
+            'Card': card,
+            'Day': day,
+            'Is Fraud?': isFraud,
+            'MCC': MCC,
+            'Merchant City': merchantCity,
+            'Merchant State': merchantState,
+            'MerchantUUID': merchantID,
+            'Month': month,
+            'Time': time,
+            'Use Chip': chip,
+            'UserUUID': userID,
+            'Year': year,
+            'Zip': zipcode
+        }
+    )
+    status_code = {"status_code": 200}
+    return json.dumps(status_code)
+
+#inserts merchants into merchants table
+def insert_merchant(latitude, longitude, zipcode):
+    table = dynamodb.Table('Merchants')
+    merchantUUID = uuid.uuid4()
+    merchantUUID = str(merchantUUID)
+    response = table.put_item(
+        Item={
+            'MerchantUUID': merchantUUID,
+            'latitude': latitude,
+            'longitude': longitude,
+            'zip': zipcode
+          }
+    )
+
+def user_leaderboard(zipcode):
+    leaderboard = []
+    table = dynamodb.Table('Users')
+    response = table.query(
+        IndexName = 'Zipcode-index',
+        KeyConditionExpression = Key('Zipcode').eq(zipcode)
+    )
+    items = response['Items']
+
+    for x in range(len(items)):
+        list = get_user_transaction(items[x]['UserUUID'])
+        total = 0.00
+        for y in range(len(list)):
+                try:
+                    amount = list[y]['transactionAmount']
+                    amount = amount.replace('$', '')
+                    total += float(amount)
+                except KeyError as ke:
+                    total += 0;
+        entry = {
+             'UserUUID': items[x]['UserUUID'],
+             'Name': items[x]['Person'],
+             'Total': round(total, 2)
+        }
+        leaderboard.append(entry)
+    leaderboard = sorted(leaderboard, key= operator.itemgetter('Total'))
+    return leaderboard
+                                        
+        
+        
+def main():
+    UserID = query_user_login("gunter.welk@gmail.com", "GunterWelk123") ##just a sample login
+    #get_user_transaction(str(UserID))
+    #insert_transaction(44.21, 0, "3:32", 22, 11, 2021, "No", 5541, "Richmond", "VA", 9, "Chip Transaction", 731, 23220)
     
     
 if __name__=="__main__":
     app.debug=True
     app.run()
-    # main()

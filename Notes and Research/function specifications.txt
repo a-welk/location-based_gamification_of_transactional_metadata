@@ -1,0 +1,23 @@
+insert_user_onboarding(email, age, retirement_age, annual_income, zipcode, budget, budget_choice): 
+	function for inserting a user right after answering basic onboarding questions
+
+insert_user(address, apartment, birthMonth, birthYear, city, age, email, FICOscore, gender, lat, long, numCards, password, perCapitaIncome, name, retirementAge, state, debt, annualIncome, zipcode)
+	function for inserting a user with every attribute
+
+query_user_login(email, password):
+	takes in customer email and plaintext password and verifies the password against the hashed password in the DB
+
+get_user_transaction(UserID):
+	retrieves all transactions of a given UserID, then stores all those transactions into a json, longest function to run.
+
+insert_transaction(amount, card, time, day, month, year, isFraud, MCC, merchantCity, merchantState, merchantID, chip, userID, zipcode)
+	inserts a transaction into DB with all transaction attributes
+
+insert_card(date_open, brand, card_index, card_number, dark_web, type, cards_issued, credit_limit, CVV, expiration, has_chip, UserUUID, pin_last_changed):
+	inserts card with all card attributes
+
+insert_merchant(latitude, longitude, zipcode):
+	inserts merchant with all merchant attributes
+
+get_user_cards(UserID):
+	gets all cards of given user ID - DOES NOT WORK RN as the UserUUIDs in cards are not related to the UserUUIDs in Users

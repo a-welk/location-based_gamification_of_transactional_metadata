@@ -1,0 +1,9 @@
+*{
+  font-family: 'Jost', sans-serif;
+}
+
+.header {
+  text-align: center;
+  font-size: 32px;
+  margin-bottom: 50px;
+}

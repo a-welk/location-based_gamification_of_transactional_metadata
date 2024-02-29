@@ -2,6 +2,7 @@ import bcrypt
 import boto3
 import uuid
 import json
+import operator
 #from dotenv import load_dotenv
 from decimal import *
 from boto3.dynamodb.conditions import Key, Attr
@@ -85,27 +86,6 @@ def query_user_login():
     except IndexError as IE:
           print("Invalid user login credentials")
           return False
-        
-
-# def query_user_login(email, password):
-#     table = dynamodb.Table('Users')
-#     response = table.query(
-#         IndexName = 'Email-index',
-#         KeyConditionExpression = Key('Email').eq(email)
-#     )
-#     try:
-#         items = response['Items']
-#         UserID = items[0]['UserUUID']
-#         hashed_password = (items[0]['Password'])
-#         if bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8')):
-#             print(f"Successfully logged into {email}")
-#             return UserID
-#         else:
-#             print("Invalid user login credentials")
-#             return False
-#     except IndexError as IE:
-#           print("Invalid user login credentials")
-#           return False
 
     
     
@@ -158,6 +138,42 @@ def get_user_transaction(UserID):
         json_file.write(json_data)
 
     return data_list
+
+
+
+def user_leaderboard(zipcode):
+    leaderboard = []
+    table = dynamodb.Table('Users')
+    response = table.query(
+        IndexName = 'Zipcode-index',
+        KeyConditionExpression = Key('Zipcode').eq(zipcode)
+    )
+    items = response['Items']
+
+    table = dynamodb.Table('Transaction')
+    for x in range(len(items)):
+        #list = test_transactions(items[x]['UserUUID'])
+        list = table.query(
+             IndexName = 'UserUUID-index',
+             KeyConditionExpression = Key('UserUUID').eq(items[x]['UserUUID'])
+        )
+        transactions = list['Items']
+        total = 0.00
+        for y in range(len(transactions)):
+                try:
+                    amount = transactions[y]['Amount']
+                    amount = amount.replace('$', '')
+                    total += float(amount)
+                except KeyError as ke:
+                    total += 0;
+        entry = {
+             'UserUUID': items[x]['UserUUID'],
+             'Name': items[x]['Person'],
+             'Total': round(total, 2)
+        }
+        leaderboard.append(entry)
+    leaderboard = sorted(leaderboard, key= operator.itemgetter('Total'))
+    return leaderboard
     
 #inserts new users into Users table
 def insert_user(address, apartment, birthMonth, birthYear, city, age, email, FICOscore, gender, lat, long, numCards, password, perCapitaIncome, name, retirementAge, state, debt, annualIncome, zipcode):
@@ -311,11 +327,56 @@ def user_leaderboard(zipcode):
         leaderboard.append(entry)
     leaderboard = sorted(leaderboard, key= operator.itemgetter('Total'))
     return leaderboard
-                                        
+
+
+def update_user_password(UserID, password):
+     password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+     table = dynamodb.Table('Users')
+     response = table.update_item(
+          Key={'UserUUID': UserID},
+          UpdateExpression = "set #password = :n",
+          ExpressionAttributeNames={
+               "#password": "Password"
+          },
+          ExpressionAttributeValues={
+               ":n": password
+          }
+     )
+
+def update_user_income(UserID, income):
+     table = dynamodb.Table('Users')
+     response = table.update_item(
+          Key={'UserUUID': UserID},
+          UpdateExpression = "set #income = :n",
+          ExpressionAttributeNames={
+               "#income": "Yearly Income - Person"
+          },
+          ExpressionAttributeValues={
+               ":n": income
+          }
+     )
+     status_code = {"status_code": 200}
+     return (json.dumps(status_code))
+
+
+def update_user_budget_option(UserID, budget_choice):
+     table = dynamodb.Table('Users')
+     response = table.update_item(
+          Key={'UserUUID': UserID},
+          UpdateExpression = "set #budget_choice = :n",
+          ExpressionAttributeNames={
+               "#budget_choice": "Budget Choice"
+          },
+          ExpressionAttributeValues={
+               ":n": budget_choice
+          }
+     )
+
+                                
         
         
 def main():
-    UserID = query_user_login("gunter.welk@gmail.com", "GunterWelk123") ##just a sample login
+    UserID = query_user_login("gunter.welk@gmail.com", "guntersnewpassword!") ##just a sample login
     #get_user_transaction(str(UserID))
     #insert_transaction(44.21, 0, "3:32", 22, 11, 2021, "No", 5541, "Richmond", "VA", 9, "Chip Transaction", 731, 23220)
     

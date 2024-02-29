@@ -178,12 +178,18 @@ def user_leaderboard(zipcode):
     )
     items = response['Items']
 
+    table = dynamodb.Table('Transaction')
     for x in range(len(items)):
-        list = test_transactions(items[x]['UserUUID'])
+        #list = test_transactions(items[x]['UserUUID'])
+        list = table.query(
+             IndexName = 'UserUUID-index',
+             KeyConditionExpression = Key('UserUUID').eq(items[x]['UserUUID'])
+        )
+        transactions = list['Items']
         total = 0.00
-        for y in range(len(list)):
+        for y in range(len(transactions)):
                 try:
-                    amount = list[y]['transactionAmount']
+                    amount = transactions[y]['Amount']
                     amount = amount.replace('$', '')
                     total += float(amount)
                 except KeyError as ke:
@@ -373,7 +379,6 @@ STILL NEED FUNCTIONS FOR:
         
 STILL NEED TO:
     add exception handling
-    recreate users table with preferences?
     """
 
 def main():

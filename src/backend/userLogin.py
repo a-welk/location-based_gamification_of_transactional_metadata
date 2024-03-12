@@ -3,6 +3,7 @@ import uuid
 import bcrypt
 import os
 import json
+import operator
 #from dotenv import load_dotenv
 from decimal import *
 from boto3.dynamodb.conditions import Key, Attr
@@ -115,20 +116,22 @@ def get_user_transaction(UserID):
     with open('output.json', 'w') as json_file:
         json_file.write(json_data)
 
+    return data_list
+
 
 def test_transactions(UserID):
-    gotItems = []
     merchitems = []
     data_list = []
-    paginator = dynamodb.meta.client.get_paginator('query')
-    for page in paginator.paginate(TableName='Transaction',
-                                   IndexName = 'UserUUID-index',
-                                   KeyConditionExpression= Key('UserUUID').eq(UserID)):
-                                        gotItems.extend(page['Items'])
-    for i in range(len(gotItems)):
+    table = dynamodb.Table('Transaction')
+    response = table.query(
+         IndexName = 'UserUUID-index',
+         KeyConditionExpression = Key('UserUUID').eq(UserID)
+    )
+    items = response['Items']
+    for i in range(len(items)):
         table = dynamodb.Table('Merchants')
         response = table.query(
-            KeyConditionExpression = Key('MerchantUUID').eq(gotItems[i]['MerchantUUID'])
+            KeyConditionExpression = Key('MerchantUUID').eq(items[i]['MerchantUUID'])
         )
         merchitems = response['Items']
         try:
@@ -144,14 +147,14 @@ def test_transactions(UserID):
         except KeyError as ke:
               merchitems[0]['zip'] = "N/A"
         data_dict = {
-            "transactionID": gotItems[i]['TransactionUUID'],
-            "transactionAmount": gotItems[i]['Amount'],
-            "transactionDay": gotItems[i]['Day'],
-            "transactionMonth": gotItems[i]['Month'],
-            "transactionYear": gotItems[i]['Year'],
-            "transactionTime": gotItems[i]['Time'],
-            "transactionMerchantID": gotItems[i]['MerchantUUID'],
-            "transactionMCC": gotItems[i]['MCC'],
+            "transactionID": items[i]['TransactionUUID'],
+            "transactionAmount": items[i]['Amount'],
+            "transactionDay": items[i]['Day'],
+            "transactionMonth": items[i]['Month'],
+            "transactionYear": items[i]['Year'],
+            "transactionTime": items[i]['Time'],
+            "transactionMerchantID": items[i]['MerchantUUID'],
+            "transactionMCC": items[i]['MCC'],
             "transactionLat": merchitems[0]['latitude'],
             "transactionLong": merchitems[0]['longitude'],
             "transactionZipcode": merchitems[0]['zip'],
@@ -163,8 +166,44 @@ def test_transactions(UserID):
     with open('output.json', 'w') as json_file:
         json_file.write(json_data)
 
+    return json_data
 
-    
+
+def user_leaderboard(zipcode):
+    leaderboard = []
+    table = dynamodb.Table('Users')
+    response = table.query(
+        IndexName = 'Zipcode-index',
+        KeyConditionExpression = Key('Zipcode').eq(zipcode)
+    )
+    items = response['Items']
+
+    table = dynamodb.Table('Transaction')
+    for x in range(len(items)):
+        #list = test_transactions(items[x]['UserUUID'])
+        list = table.query(
+             IndexName = 'UserUUID-index',
+             KeyConditionExpression = Key('UserUUID').eq(items[x]['UserUUID'])
+        )
+        transactions = list['Items']
+        total = 0.00
+        for y in range(len(transactions)):
+                try:
+                    amount = transactions[y]['Amount']
+                    amount = amount.replace('$', '')
+                    total += float(amount)
+                except KeyError as ke:
+                    total += 0;
+        entry = {
+             'UserUUID': items[x]['UserUUID'],
+             'Name': items[x]['Person'],
+             'Total': round(total, 2)
+        }
+        leaderboard.append(entry)
+    leaderboard = sorted(leaderboard, key= operator.itemgetter('Total'))
+    return leaderboard
+
+
 #inserts a new transaction into the transaction table
 def insert_transaction(amount, card, time, day, month, year, isFraud, MCC, merchantCity, merchantState, merchantID, chip, userID, zipcode):
     amount = str(amount)
@@ -340,11 +379,10 @@ STILL NEED FUNCTIONS FOR:
         
 STILL NEED TO:
     add exception handling
-    recreate users table with preferences?
     """
 
 def main():
-    UserID = query_user_login("gunter.welk@gmail.com", "guntersnewpassword!") #just a sample login
+    #UserID = query_user_login("gunter.welk@gmail.com", "guntersnewpassword!") #just a sample login
     #UserID = query_user_login("amira.bailey@gmail.com", "AmiraBailey123")
     #get_user_cards(str(UserID))
     #update_user_password("7d49c831-ff33-49bd-9afd-2d061c61ea25", "guntersnewpassword!")
@@ -355,6 +393,7 @@ def main():
     #insert_user("1411 Grove Ave", "11", "August", "2001", "Richmond", 22, "welka@vcu.edu", 750, "male", "37.54873869465798", "37.54873869465798, -77.45798251781274", 
                 #2, "AlexWelk123", 10000, "Alex Welk", 70, "VA", 0, 10000, 23220)
     #insert_user_onboarding("gunter.welk@gmail.com", "gunterthecat!", 10, 19, 6900, 23220, 50000, "50-30-20")
+    print(user_leaderboard("98290"))
 
     
     

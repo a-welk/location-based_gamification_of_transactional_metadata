@@ -1,0 +1,39 @@
+<br>
+<br>
+<br>
+<br>
+<br>
+<table border="1">
+  <thead>
+    <tr>
+      <th>TransactionUUID</th>
+      <th>Amount</th>
+      <th>Card</th>
+      <th>Day</th>
+      <th>MCC</th>
+      <th>Month</th>
+      <th>Time</th>
+      <th>Year</th>
+      <th>Zip</th>
+      <th>Latitude</th>
+      <th>Longitude</th>
+      <!-- Add more headers as needed -->
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let transaction of transactions">
+      <td>{{ transaction.TransactionUUID }}</td>
+      <td>{{ transaction.Amount }}</td>
+      <td>{{ transaction.Card }}</td>
+      <td>{{ transaction.Day }}</td>
+      <td>{{ transaction.MCC }}</td>
+      <td>{{ transaction.Month }}</td>
+      <td>{{ transaction.Time }}</td>
+      <td>{{ transaction.Year }}</td>
+      <td>{{ transaction.Zip }}</td>
+      <td>{{ transaction.Latitude }}</td>
+      <td>{{ transaction.Longitude }}</td>
+      <!-- Add more data cells as needed -->
+    </tr>
+  </tbody>
+</table>

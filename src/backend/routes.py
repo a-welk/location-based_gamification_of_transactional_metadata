@@ -85,30 +85,16 @@ def query_user_login():
     except IndexError as IE:
           print("Invalid user login credentials")
           return False
-        
 
-# def query_user_login(email, password):
-#     table = dynamodb.Table('Users')
-#     response = table.query(
+# @app.route('/dashboard', method=['GET'])
+# def get_user_name():
+#         table = dynamodb.Table('Users')
+#         response = table.query(
 #         IndexName = 'Email-index',
 #         KeyConditionExpression = Key('Email').eq(email)
 #     )
-#     try:
-#         items = response['Items']
-#         UserID = items[0]['UserUUID']
-#         hashed_password = (items[0]['Password'])
-#         if bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8')):
-#             print(f"Successfully logged into {email}")
-#             return UserID
-#         else:
-#             print("Invalid user login credentials")
-#             return False
-#     except IndexError as IE:
-#           print("Invalid user login credentials")
-#           return False
-
-    
-    
+     
+           
 #queries transactions table for all the transactions of a given userID - not working rn bc of UserUUID disputes
 def get_user_transaction(UserID):
     #attempt at pagination in order to retrieve ALL the transactions from designated user
@@ -273,6 +259,27 @@ def insert_merchant(latitude, longitude, zipcode):
             'zip': zipcode
           }
     )
+
+    @app.route('/dashboard', methods=['GET'])
+    def dashboard():
+        token = request.headers.get('Authorization')
+        if not token:
+            return jsonify({'error': 'Token is missing', 'status': 401}), 401
+
+        try:
+            payload = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+            UserID = payload.get('userID')
+            # Call function to retrieve user-specific data from the database
+            user_data = get_user_data(UserID)
+            if user_data:
+                return jsonify({'user_data': user_data}), 200
+            else:
+                return jsonify({'error': 'User data not found', 'status': 404}), 404
+        except jwt.ExpiredSignatureError:
+            return jsonify({'error': 'Token has expired', 'status': 401}), 401
+        except jwt.InvalidTokenError:
+            return jsonify({'error': 'Invalid token', 'status': 401}), 401
+
                                         
         
         

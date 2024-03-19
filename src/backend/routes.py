@@ -140,7 +140,7 @@ def get_user_transaction(UserID):
     return data_list
 
 
-
+@app.route('/leaderboard', methods=['POST'])
 def user_leaderboard(zipcode):
     leaderboard = []
     table = dynamodb.Table('Users')
@@ -173,7 +173,7 @@ def user_leaderboard(zipcode):
         }
         leaderboard.append(entry)
     leaderboard = sorted(leaderboard, key= operator.itemgetter('Total'))
-    return leaderboard
+    return jsonify(leaderboard), 200
     
 #inserts new users into Users table
 def insert_user(address, apartment, birthMonth, birthYear, city, age, email, FICOscore, gender, lat, long, numCards, password, perCapitaIncome, name, retirementAge, state, debt, annualIncome, zipcode):

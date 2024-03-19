@@ -16,7 +16,6 @@ import { DialogService } from '../services/dialog.service';
   imports: [
     CommonModule,
     DashboardComponent,
-    LeaderboardComponent,
     LoginComponent,
     RouterLink,
   ],

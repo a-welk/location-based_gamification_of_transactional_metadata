@@ -76,6 +76,7 @@ def query_user_login():
      
            
 #queries transactions table for all the transactions of a given userID - not working rn bc of UserUUID disputes
+app.route('/transactions', method=['GET'])
 def get_user_transaction(UserID):
     merchitems = []
     data_list = []

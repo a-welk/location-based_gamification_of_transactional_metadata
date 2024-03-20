@@ -127,7 +127,8 @@ def get_user_transaction(UserID):
 
 
 @app.route('/leaderboard', methods=['POST'])
-def user_leaderboard(zipcode):
+def user_leaderboard():
+    zipcode = request.json.get('zipcode')
     leaderboard = []
     table = dynamodb.Table('Users')
     response = table.query(

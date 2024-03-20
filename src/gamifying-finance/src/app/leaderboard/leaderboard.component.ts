@@ -21,10 +21,8 @@ export class LeaderboardComponent {
     this.httpservice.leaderboard(this.zipcode)
       .subscribe({
         next: response => {
-          if(response.status == 200) {
-            console.log(response.body);
-            return response.body;
-          }
+          console.log(response)
+          this.leaderboardData = response
         },
         error: error => console.error('Error!', error)
       });

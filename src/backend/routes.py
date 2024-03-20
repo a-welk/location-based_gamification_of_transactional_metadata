@@ -87,8 +87,15 @@ def query_user_login():
           print("Invalid user login credentials")
           return False
 
-    
-    
+# @app.route('/dashboard', method=['GET'])
+# def get_user_name():
+#         table = dynamodb.Table('Users')
+#         response = table.query(
+#         IndexName = 'Email-index',
+#         KeyConditionExpression = Key('Email').eq(email)
+#     )
+     
+           
 #queries transactions table for all the transactions of a given userID - not working rn bc of UserUUID disputes
 def get_user_transaction(UserID):
     merchitems = []

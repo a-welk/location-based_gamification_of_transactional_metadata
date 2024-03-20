@@ -1,31 +1,33 @@
 import { Component } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { LeaderboardService } from '../services/leaderboard.service';
 import { HttpService } from '../services/http.service';
+import {CommonModule, NgIf} from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-leaderboard',
   standalone: true,
   templateUrl: './leaderboard.component.html',
   styleUrls: ['./leaderboard.component.css'],
-  imports:[LeaderboardComponent]
+  imports:[LeaderboardComponent, CommonModule, FormsModule]
 })
 export class LeaderboardComponent {
   zipcode: string = '';
   leaderboardData: any[] = [];
 
-  constructor(private leaderboardService: LeaderboardService) {}
+  constructor(private httpservice: HttpService) {}
 
   leaderboard() {
-    // Replace 'your_backend_api_url' with the actual URL of your backend API
-    this.leaderboardService.leaderboard(this.zipcode)
+    this.httpservice.leaderboard(this.zipcode)
       .subscribe({
         next: response => {
           if(response.status == 200) {
-            console.log(response.body)
+            console.log(response.body);
+            return response.body;
           }
         },
+        error: error => console.error('Error!', error)
       });
-
+      
   }
 }

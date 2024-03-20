@@ -1,11 +1,12 @@
 import { Component, NgModule } from '@angular/core';
+import {NgIf} from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { NavbarComponent } from './navbar/navbar.component';
 import { LoginComponent } from './login/login.component';
 import { LeaderboardComponent } from './leaderboard/leaderboard.component';
-
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -14,6 +15,9 @@ import { LeaderboardComponent } from './leaderboard/leaderboard.component';
     NavbarComponent,
     LoginComponent,
     RouterModule,
+    CommonModule,
+    FormsModule,
+    LeaderboardComponent
   ],
   styleUrls: ['./app.component.css']
 }) 

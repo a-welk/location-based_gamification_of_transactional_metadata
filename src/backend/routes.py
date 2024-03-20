@@ -41,27 +41,6 @@ transactionZipcode = []
 items = []
 
 
-#queries the user table given an email and password and determines if the password is correct - need to add code for cases where email is not found
-# @app.route('/login', methods=['POST'])
-# def query_user_login():
-#     data = request.json
-#     email = data['email']
-#     password = data['password']
-#     table = dynamodb.Table('Users')
-#     response = table.query(
-#         IndexName='Email-index',
-#         KeyConditionExpression=Key('Email').eq(email)
-#     )
-#     items = response['Items']
-#     if not items:
-#         return jsonify({'error': 'User not found', 'status': 404}), 404
-#     if password == items[0]['Password (unhashed)']:
-#         # return jsonify({'status': '200'})
-#         userID = int(items[0]['User ID'])
-#         token = jwt.encode({'userId': userID, 'email': email}, app.config['SECRET_KEY'], algorithm='HS256')
-#         return jsonify({'token': token}), 200
-#     return jsonify({'error': 'Invalid credentials', 'status': 401}), 401
-
 @app.route('/login', methods=['POST'])
 def query_user_login():
     email = request.json.get('email')

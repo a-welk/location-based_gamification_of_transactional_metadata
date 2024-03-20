@@ -393,7 +393,7 @@ def main():
     #insert_user("1411 Grove Ave", "11", "August", "2001", "Richmond", 22, "welka@vcu.edu", 750, "male", "37.54873869465798", "37.54873869465798, -77.45798251781274", 
                 #2, "AlexWelk123", 10000, "Alex Welk", 70, "VA", 0, 10000, 23220)
     #insert_user_onboarding("gunter.welk@gmail.com", "gunterthecat!", 10, 19, 6900, 23220, 50000, "50-30-20")
-    print(user_leaderboard("98290"))
+    print(user_leaderboard("75758"))
 
     
     

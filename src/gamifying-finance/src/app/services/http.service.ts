@@ -26,4 +26,9 @@ export class HttpService {
     const name = this.apiUrl + '/name';
     return this.http.get(name);
   }
+
+  leaderboard(zipcode: string): Observable<any> {
+    const leaderboardUrl = this.apiUrl +'/leaderboard'; 
+    return this.http.post(leaderboardUrl,  {zipcode});
+  }
 }

@@ -41,27 +41,6 @@ transactionZipcode = []
 items = []
 
 
-#queries the user table given an email and password and determines if the password is correct - need to add code for cases where email is not found
-# @app.route('/login', methods=['POST'])
-# def query_user_login():
-#     data = request.json
-#     email = data['email']
-#     password = data['password']
-#     table = dynamodb.Table('Users')
-#     response = table.query(
-#         IndexName='Email-index',
-#         KeyConditionExpression=Key('Email').eq(email)
-#     )
-#     items = response['Items']
-#     if not items:
-#         return jsonify({'error': 'User not found', 'status': 404}), 404
-#     if password == items[0]['Password (unhashed)']:
-#         # return jsonify({'status': '200'})
-#         userID = int(items[0]['User ID'])
-#         token = jwt.encode({'userId': userID, 'email': email}, app.config['SECRET_KEY'], algorithm='HS256')
-#         return jsonify({'token': token}), 200
-#     return jsonify({'error': 'Invalid credentials', 'status': 401}), 401
-
 @app.route('/login', methods=['POST'])
 def query_user_login():
     email = request.json.get('email')
@@ -148,7 +127,7 @@ def get_user_transaction(UserID):
     return data_list
 
 
-
+@app.route('/leaderboard', methods=['POST'])
 def user_leaderboard(zipcode):
     leaderboard = []
     table = dynamodb.Table('Users')
@@ -181,7 +160,7 @@ def user_leaderboard(zipcode):
         }
         leaderboard.append(entry)
     leaderboard = sorted(leaderboard, key= operator.itemgetter('Total'))
-    return leaderboard
+    return jsonify(leaderboard), 200
     
 #inserts new users into Users table
 def insert_user(address, apartment, birthMonth, birthYear, city, age, email, FICOscore, gender, lat, long, numCards, password, perCapitaIncome, name, retirementAge, state, debt, annualIncome, zipcode):

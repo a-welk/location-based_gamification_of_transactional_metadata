@@ -394,6 +394,7 @@ def main():
                 #2, "AlexWelk123", 10000, "Alex Welk", 70, "VA", 0, 10000, 23220)
     #insert_user_onboarding("gunter.welk@gmail.com", "gunterthecat!", 10, 19, 6900, 23220, 50000, "50-30-20")
     print(user_leaderboard("75758"))
+    #zip with 2 ppl: 28312
 
     
     

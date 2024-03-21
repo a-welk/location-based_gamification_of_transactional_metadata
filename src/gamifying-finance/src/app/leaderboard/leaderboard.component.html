@@ -1,19 +1,32 @@
 <div class="container">
   <h2 class="header">Leaderboard</h2>
-  <form (ngSubmit) = "leaderboard()">
+  <form (ngSubmit)="leaderboard()">
     <div class="form">
       <label for="zipcode">Enter Zipcode:</label>
-      <input type="text" id="zipcode" [(ngModel)]="zipcode" name="zipcode" required placeholder="Zipcode"/>
-      <button (click)="leaderboard()">Submit</button>
+      <input type="text" id="zipcode" [(ngModel)]="zipcode" name="zipcode" required placeholder="Zipcode" />
+      <button type="submit">Submit</button>
     </div>
   </form>
-  <div *ngIf="leaderboardData.length > 0">
+  <div *ngIf="leaderboardData.length > 0; else noUsers">
     <h2>Leaderboard</h2>
-    <ul>
-      <li *ngFor="let person of leaderboardData">
-        {{ person.Name }} - {{ person.Total }}
-      </li>
-    </ul>
-    </div>
+    <table class="leaderboard-table">
+      <thead>
+        <tr>
+          <th>Rank #</th>
+          <th>Name</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let person of leaderboardData; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td>{{ person.Name }}</td>
+          <td>{{ person.Total }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <ng-template #noUsers>
+    <h2>No users in specified zipcode</h2>
+  </ng-template>
 </div>
-  

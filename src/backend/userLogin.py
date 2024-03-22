@@ -6,6 +6,7 @@ import json
 import operator
 #from dotenv import load_dotenv
 from decimal import *
+from datetime import datetime
 from boto3.dynamodb.conditions import Key, Attr
 dynamodb = boto3.resource('dynamodb',
                           aws_access_key_id="AKIA42KZIHZE3NIJXCJ2", #insert YOUR aws access key here
@@ -178,12 +179,53 @@ def user_leaderboard(zipcode):
     )
     items = response['Items']
 
+    table = dynamodb.Table('Transaction')
     for x in range(len(items)):
-        list = test_transactions(items[x]['UserUUID'])
+        #list = test_transactions(items[x]['UserUUID'])
+        list = table.query(
+             IndexName = 'UserUUID-index',
+             KeyConditionExpression = Key('UserUUID').eq(items[x]['UserUUID'])
+        )
+        transactions = list['Items']
         total = 0.00
-        for y in range(len(list)):
+        for y in range(len(transactions)):
                 try:
-                    amount = list[y]['transactionAmount']
+                    amount = transactions[y]['Amount']
+                    amount = amount.replace('$', '')
+                    total += float(amount)
+                except KeyError as ke:
+                    total += 0;
+        entry = {
+             'UserUUID': items[x]['UserUUID'],
+             'Name': items[x]['Person'],
+             'Total': round(total, 2)
+        }
+        leaderboard.append(entry)
+    leaderboard = sorted(leaderboard, key= operator.itemgetter('Total'))
+    return leaderboard
+
+def user_leaderboard_from_month(zipcode, month, year):
+
+    leaderboard = []
+    table = dynamodb.Table('Users')
+    response = table.query(
+        IndexName = 'Zipcode-index',
+        KeyConditionExpression = Key('Zipcode').eq(zipcode)
+    )
+    items = response['Items']
+
+    table = dynamodb.Table('Transaction')
+    for x in range(len(items)):
+        list = table.query(
+             IndexName = 'UserUUID-index',
+             KeyConditionExpression = Key('UserUUID').eq(items[x]['UserUUID'])
+        )
+        transactions = list['Items']
+        total = 0.00
+        for y in range(len(transactions)):
+            if(transactions[y]['Month'] == str(month) and transactions[y]['Year'] == str(year)):
+                try:
+                    amount = transactions[y]['Amount']
                     amount = amount.replace('$', '')
                     total += float(amount)
                 except KeyError as ke:
@@ -373,7 +415,6 @@ STILL NEED FUNCTIONS FOR:
         
 STILL NEED TO:
     add exception handling
-    recreate users table with preferences?
     """
 
 def main():
@@ -388,7 +429,9 @@ def main():
     #insert_user("1411 Grove Ave", "11", "August", "2001", "Richmond", 22, "welka@vcu.edu", 750, "male", "37.54873869465798", "37.54873869465798, -77.45798251781274", 
                 #2, "AlexWelk123", 10000, "Alex Welk", 70, "VA", 0, 10000, 23220)
     #insert_user_onboarding("gunter.welk@gmail.com", "gunterthecat!", 10, 19, 6900, 23220, 50000, "50-30-20")
-    print(user_leaderboard("98290"))
+    #print(user_leaderboard("75758"))
+    print(user_leaderboard_from_month("28312", 10, 2013))
+    #zip with 2 ppl: 28312
 
     
     

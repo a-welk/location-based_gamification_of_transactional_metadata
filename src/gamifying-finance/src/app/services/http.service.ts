@@ -31,4 +31,9 @@ export class HttpService {
     const leaderboardUrl = this.apiUrl +'/leaderboard'; 
     return this.http.post(leaderboardUrl,  {zipcode});
   }
+
+  monthly_leaderboard(zipcode: string): Observable<any> {
+    const leaderboardUrl = this.apiUrl +'/monthly_leaderboard'; 
+    return this.http.post(leaderboardUrl,  {zipcode});
+  }
 }

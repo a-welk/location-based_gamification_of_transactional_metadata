@@ -10,6 +10,7 @@ import os
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from decouple import config
+from datetime import datetime
 import jwt
 
 # load_dotenv()
@@ -162,6 +163,45 @@ def user_leaderboard():
         leaderboard.append(entry)
     leaderboard = sorted(leaderboard, key= operator.itemgetter('Total'))
     return jsonify(leaderboard), 200
+
+
+@app.route('/monthly_leaderboard', methods=['POST'])
+def user_leaderboard_from_month():
+    zipcode = request.json.get('zipcode')
+    month = datetime.today().month
+    year = datetime.today().year
+    leaderboard = []
+    table = dynamodb.Table('Users')
+    response = table.query(
+        IndexName = 'Zipcode-index',
+        KeyConditionExpression = Key('Zipcode').eq(zipcode)
+    )
+    items = response['Items']
+
+    table = dynamodb.Table('Transaction')
+    for x in range(len(items)):
+        list = table.query(
+             IndexName = 'UserUUID-index',
+             KeyConditionExpression = Key('UserUUID').eq(items[x]['UserUUID'])
+        )
+        transactions = list['Items']
+        total = 0.00
+        for y in range(len(transactions)):
+            if(transactions[y]['Month'] == str(month) and transactions[y]['Year'] == str(year)):
+                try:
+                    amount = transactions[y]['Amount']
+                    amount = amount.replace('$', '')
+                    total += float(amount)
+                except KeyError as ke:
+                    total += 0;
+        entry = {
+             'UserUUID': items[x]['UserUUID'],
+             'Name': items[x]['Person'],
+             'Total': round(total, 2)
+        }
+        leaderboard.append(entry)
+    leaderboard = sorted(leaderboard, key= operator.itemgetter('Total'))
+    return leaderboard
     
 #inserts new users into Users table
 def insert_user(address, apartment, birthMonth, birthYear, city, age, email, FICOscore, gender, lat, long, numCards, password, perCapitaIncome, name, retirementAge, state, debt, annualIncome, zipcode):

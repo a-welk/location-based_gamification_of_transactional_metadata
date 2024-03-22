@@ -14,18 +14,43 @@ import { FormsModule } from '@angular/forms';
 export class LeaderboardComponent {
   zipcode: string = '';
   leaderboardData: any[] = [];
+  selectedOption: string = 'showALL';
 
   constructor(private httpservice: HttpService) {}
 
   leaderboard() {
     this.httpservice.leaderboard(this.zipcode)
-      .subscribe({
-        next: response => {
-          console.log(response)
-          this.leaderboardData = response
-        },
-        error: error => console.error('Error!', error)
-      });
-      
+    .subscribe({
+      next: response => {
+        console.log(response)
+        this.leaderboardData = response
+      },
+      error: error => console.error('Error!', error)
+    });
   }
-}
+
+  executeLeaderboardFunction() {
+    switch(this.selectedOption) {
+      case 'showAll':
+        this.httpservice.leaderboard(this.zipcode)
+        .subscribe({
+          next: response => {
+            console.log(response)
+            this.leaderboardData = response
+          },
+          error: error => console.error('Error!', error)
+        });
+        break;
+      case 'showMonth':
+        this.httpservice.monthly_leaderboard(this.zipcode)
+        .subscribe({
+          next: response => {
+            console.log(response)
+            this.leaderboardData = response
+          },
+          error: error => console.error('Error!', error)
+        });
+        break;
+      }
+    }
+  }

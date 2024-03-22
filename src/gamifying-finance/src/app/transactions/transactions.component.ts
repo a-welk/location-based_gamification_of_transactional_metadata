@@ -1,13 +1,14 @@
 // src/app/transactions/transactions.component.ts
-import { Component, OnInit } from '@angular/core';
+import { OnInit } from '@angular/core';
 import { TransactionService } from '../services/transactions.service';
-import { CommonModule } from '@angular/common'; // Import CommonModule
+import { Component } from '@angular/core';
+import { NgForOf } from '@angular/common'; // Import NgFor directive
 
 @Component({
-  selector: 'app-transactions',
+  selector: 'app-transactions-component',
   templateUrl: './transactions.component.html',
-  styleUrls: ['./transactions.component.css'],
-  providers: [TransactionService] // Add DataService to the providers array
+  standalone: true,
+  imports: [NgForOf], // Include NgForOf in the imports array
 })
 export class TransactionsComponent implements OnInit {
   transactions: any[] = [];
@@ -19,6 +20,7 @@ export class TransactionsComponent implements OnInit {
       this.transactions = data.map((transaction: any) => { // Specify the type of the transaction parameter
         // Destructure to exclude unwanted properties and return the rest
         const { merchantUUID, UserUUID, UseChip, 'Is Fraud?': isFraud, ...rest } = transaction;
+        console.log('rest', rest);
         return rest;
       });
     });

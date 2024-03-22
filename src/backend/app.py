@@ -69,24 +69,29 @@ def get_user_transaction():
         
         # Loop through each transaction to fetch merchant's latitude and longitude
         for transaction in transactions:
+            if 'Zip' not in transaction:
+                transaction['Zip'] = "Not Available"
+
             merchant_uuid = transaction['MerchantUUID']
             
             # Query the Merchants table using MerchantUUID
             merchant_response = merchants_table.get_item(
                 Key={'MerchantUUID': merchant_uuid}
             )
+
             
             # Check if merchant details are found
             if 'Item' in merchant_response:
                 merchant_details = merchant_response['Item']
                 # Add latitude and longitude to the transaction dictionary
-                transaction['Latitude'] = merchant_details.get('Latitude', 'Not Available')
-                transaction['Longitude'] = merchant_details.get('Longitude', 'Not Available')
+                transaction['Latitude'] = merchant_details.get('latitude', 'Not Available')
+                transaction['Longitude'] = merchant_details.get('longitude', 'Not Available')
                 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
+    print(transactions[1].keys())
     return jsonify(transactions)
+
 
 if __name__ == '__main__':
     

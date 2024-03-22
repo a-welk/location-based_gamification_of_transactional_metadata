@@ -38,6 +38,6 @@
   </div>
 
   <ng-template #noUsers>
-    <h2>No users in specified zipcode</h2>
+    <h2 *ngIf="inputted">No users in specified zipcode</h2>
   </ng-template>
 </div>

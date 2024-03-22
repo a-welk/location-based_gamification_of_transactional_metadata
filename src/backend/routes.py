@@ -2,6 +2,7 @@ import bcrypt
 import boto3
 import uuid
 import json
+import operator
 #from dotenv import load_dotenv
 from decimal import *
 from boto3.dynamodb.conditions import Key, Attr
@@ -9,6 +10,7 @@ import os
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from decouple import config
+from datetime import datetime
 import jwt
 
 # load_dotenv()
@@ -40,27 +42,6 @@ transactionZipcode = []
 items = []
 
 
-#queries the user table given an email and password and determines if the password is correct - need to add code for cases where email is not found
-# @app.route('/login', methods=['POST'])
-# def query_user_login():
-#     data = request.json
-#     email = data['email']
-#     password = data['password']
-#     table = dynamodb.Table('Users')
-#     response = table.query(
-#         IndexName='Email-index',
-#         KeyConditionExpression=Key('Email').eq(email)
-#     )
-#     items = response['Items']
-#     if not items:
-#         return jsonify({'error': 'User not found', 'status': 404}), 404
-#     if password == items[0]['Password (unhashed)']:
-#         # return jsonify({'status': '200'})
-#         userID = int(items[0]['User ID'])
-#         token = jwt.encode({'userId': userID, 'email': email}, app.config['SECRET_KEY'], algorithm='HS256')
-#         return jsonify({'token': token}), 200
-#     return jsonify({'error': 'Invalid credentials', 'status': 401}), 401
-
 @app.route('/login', methods=['POST'])
 def query_user_login():
     email = request.json.get('email')
@@ -85,6 +66,7 @@ def query_user_login():
     except IndexError as IE:
           print("Invalid user login credentials")
           return False
+
 
 @app.route('/getTransactions', methods=['GET'])
 def get_user_transaction():
@@ -139,29 +121,18 @@ def get_user_transaction():
     print(transactions[1].keys())
     return jsonify(transactions)        
 
-# def query_user_login(email, password):
-#     table = dynamodb.Table('Users')
-#     response = table.query(
+
+# @app.route('/dashboard', method=['GET'])
+# def get_user_name():
+#         table = dynamodb.Table('Users')
+#         response = table.query(
 #         IndexName = 'Email-index',
 #         KeyConditionExpression = Key('Email').eq(email)
 #     )
-#     try:
-#         items = response['Items']
-#         UserID = items[0]['UserUUID']
-#         hashed_password = (items[0]['Password'])
-#         if bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8')):
-#             print(f"Successfully logged into {email}")
-#             return UserID
-#         else:
-#             print("Invalid user login credentials")
-#             return False
-#     except IndexError as IE:
-#           print("Invalid user login credentials")
-#           return False
-
-    
-    
+     
+           
 #queries transactions table for all the transactions of a given userID - not working rn bc of UserUUID disputes
+app.route('/transactions', method=['GET'])
 def get_user_transaction(UserID):
     merchitems = []
     data_list = []
@@ -210,6 +181,82 @@ def get_user_transaction(UserID):
         json_file.write(json_data)
 
     return data_list
+
+
+@app.route('/leaderboard', methods=['POST'])
+def user_leaderboard():
+    zipcode = request.json.get('zipcode')
+    leaderboard = []
+    table = dynamodb.Table('Users')
+    response = table.query(
+        IndexName = 'Zipcode-index',
+        KeyConditionExpression = Key('Zipcode').eq(zipcode)
+    )
+    items = response['Items']
+
+    table = dynamodb.Table('Transaction')
+    for x in range(len(items)):
+        #list = test_transactions(items[x]['UserUUID'])
+        list = table.query(
+             IndexName = 'UserUUID-index',
+             KeyConditionExpression = Key('UserUUID').eq(items[x]['UserUUID'])
+        )
+        transactions = list['Items']
+        total = 0.00
+        for y in range(len(transactions)):
+                try:
+                    amount = transactions[y]['Amount']
+                    amount = amount.replace('$', '')
+                    total += float(amount)
+                except KeyError as ke:
+                    total += 0;
+        entry = {
+             'UserUUID': items[x]['UserUUID'],
+             'Name': items[x]['Person'],
+             'Total': round(total, 2)
+        }
+        leaderboard.append(entry)
+    leaderboard = sorted(leaderboard, key= operator.itemgetter('Total'))
+    return jsonify(leaderboard), 200
+
+
+@app.route('/monthly_leaderboard', methods=['POST'])
+def user_leaderboard_from_month():
+    zipcode = request.json.get('zipcode')
+    month = datetime.today().month
+    year = datetime.today().year
+    leaderboard = []
+    table = dynamodb.Table('Users')
+    response = table.query(
+        IndexName = 'Zipcode-index',
+        KeyConditionExpression = Key('Zipcode').eq(zipcode)
+    )
+    items = response['Items']
+
+    table = dynamodb.Table('Transaction')
+    for x in range(len(items)):
+        list = table.query(
+             IndexName = 'UserUUID-index',
+             KeyConditionExpression = Key('UserUUID').eq(items[x]['UserUUID'])
+        )
+        transactions = list['Items']
+        total = 0.00
+        for y in range(len(transactions)):
+            if(transactions[y]['Month'] == str(month) and transactions[y]['Year'] == str(year)):
+                try:
+                    amount = transactions[y]['Amount']
+                    amount = amount.replace('$', '')
+                    total += float(amount)
+                except KeyError as ke:
+                    total += 0;
+        entry = {
+             'UserUUID': items[x]['UserUUID'],
+             'Name': items[x]['Person'],
+             'Total': round(total, 2)
+        }
+        leaderboard.append(entry)
+    leaderboard = sorted(leaderboard, key= operator.itemgetter('Total'))
+    return leaderboard
     
 #inserts new users into Users table
 def insert_user(address, apartment, birthMonth, birthYear, city, age, email, FICOscore, gender, lat, long, numCards, password, perCapitaIncome, name, retirementAge, state, debt, annualIncome, zipcode):
@@ -363,11 +410,56 @@ def user_leaderboard(zipcode):
         leaderboard.append(entry)
     leaderboard = sorted(leaderboard, key= operator.itemgetter('Total'))
     return leaderboard
-                                        
+
+
+def update_user_password(UserID, password):
+     password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+     table = dynamodb.Table('Users')
+     response = table.update_item(
+          Key={'UserUUID': UserID},
+          UpdateExpression = "set #password = :n",
+          ExpressionAttributeNames={
+               "#password": "Password"
+          },
+          ExpressionAttributeValues={
+               ":n": password
+          }
+     )
+
+def update_user_income(UserID, income):
+     table = dynamodb.Table('Users')
+     response = table.update_item(
+          Key={'UserUUID': UserID},
+          UpdateExpression = "set #income = :n",
+          ExpressionAttributeNames={
+               "#income": "Yearly Income - Person"
+          },
+          ExpressionAttributeValues={
+               ":n": income
+          }
+     )
+     status_code = {"status_code": 200}
+     return (json.dumps(status_code))
+
+
+def update_user_budget_option(UserID, budget_choice):
+     table = dynamodb.Table('Users')
+     response = table.update_item(
+          Key={'UserUUID': UserID},
+          UpdateExpression = "set #budget_choice = :n",
+          ExpressionAttributeNames={
+               "#budget_choice": "Budget Choice"
+          },
+          ExpressionAttributeValues={
+               ":n": budget_choice
+          }
+     )
+
+                                
         
         
 def main():
-    UserID = query_user_login("gunter.welk@gmail.com", "GunterWelk123") ##just a sample login
+    UserID = query_user_login("gunter.welk@gmail.com", "guntersnewpassword!") ##just a sample login
     #get_user_transaction(str(UserID))
     #insert_transaction(44.21, 0, "3:32", 22, 11, 2021, "No", 5541, "Richmond", "VA", 9, "Chip Transaction", 731, 23220)
     

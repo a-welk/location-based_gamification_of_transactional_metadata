@@ -1,3 +1,4 @@
+
 // src/app/transactions/transactions.component.ts
 import { OnInit } from '@angular/core';
 import { TransactionService } from '../services/transactions.service';
@@ -26,3 +27,4 @@ export class TransactionsComponent implements OnInit {
     });
   }
 }
+

@@ -1,0 +1,43 @@
+<div class="container">
+  <h2 class="header">Leaderboard</h2>
+  <form (ngSubmit)="leaderboard()">
+    <div class="form">
+      <label for="zipcode">Enter Zipcode:</label>
+      <input type="text" id="zipcode" [(ngModel)]="zipcode" name="zipcode" required placeholder="Zipcode" />
+      <button type="submit">Submit</button>
+    </div>
+  </form>
+
+  <div *ngIf="leaderboardData.length > 0; else noUsers">
+    <h2>Leaderboard</h2>
+
+    <!-- Dropdown menu -->
+    <label for="leaderboardOptions">Select Leaderboard:</label>
+    <select id="leaderboardOptions" [(ngModel)]="selectedOption" (change)="executeLeaderboardFunction()">
+      <option value="showAll">Show All</option>
+      <option value="showMonth">Monthly</option>
+      <!-- Add more options if needed -->
+    </select>
+
+    <table class="leaderboard-table">
+      <thead>
+        <tr>
+          <th>Rank #</th>
+          <th>Name</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let person of leaderboardData; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td>{{ person.Name }}</td>
+          <td>{{ person.Total }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <ng-template #noUsers>
+    <h2>No users in specified zipcode</h2>
+  </ng-template>
+</div>

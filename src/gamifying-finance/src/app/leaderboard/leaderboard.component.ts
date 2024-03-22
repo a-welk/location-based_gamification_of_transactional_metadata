@@ -15,6 +15,7 @@ export class LeaderboardComponent {
   zipcode: string = '';
   leaderboardData: any[] = [];
   selectedOption: string = 'showALL';
+  inputted: boolean = false;
 
   constructor(private httpservice: HttpService) {}
 
@@ -23,6 +24,7 @@ export class LeaderboardComponent {
     .subscribe({
       next: response => {
         console.log(response)
+        this.inputted = true
         this.leaderboardData = response
       },
       error: error => console.error('Error!', error)

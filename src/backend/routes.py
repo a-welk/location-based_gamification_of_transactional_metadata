@@ -7,7 +7,7 @@ import operator
 from decimal import *
 from boto3.dynamodb.conditions import Key, Attr
 import os
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, redirect, url_for
 from flask_cors import CORS
 from decouple import config
 from datetime import datetime
@@ -67,7 +67,6 @@ def query_user_login():
           print("Invalid user login credentials")
           return False
 
-
 @app.route('/getTransactions', methods=['GET'])
 def get_user_transaction():
     # Initialize a DynamoDB resource
@@ -79,13 +78,26 @@ def get_user_transaction():
     # Specify your Transaction and Merchants table names
     transactions_table_name = 'Transaction'
     merchants_table_name = 'Merchants'
+    token = None
+    auth_header = request.headers.get('Authorization')
+    if auth_header:
+        token = auth_header.split(" ")[1]
+    print(token)
+    user_uuid = ""
+    if token:
+        try:
+            decoded_token = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+            user_uuid = decoded_token['userID']
+            # Continue with the rest of the code using the userID
+        except jwt.InvalidTokenError:
+            return jsonify({'error': 'Invalid token', 'status': 401}), 401
+    else:
+        return jsonify({'error': 'Token not provided', 'status': 401}), 401
     
     # Initialize the tables
     transactions_table = dynamodb.Table(transactions_table_name)
     merchants_table = dynamodb.Table(merchants_table_name)
     
-    # Specify the UserUUID you're querying for
-    user_uuid = "b47522dd-2dc9-4ae9-a4cc-76d57afb3602"
     
     try:
         # Perform the query operation for transactions
@@ -118,14 +130,11 @@ def get_user_transaction():
                 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    print(transactions[1].keys())
     return jsonify(transactions)        
 
-
-# @app.route('/dashboard', method=['GET'])
-# def get_user_name():
-#         table = dynamodb.Table('Users')
-#         response = table.query(
+# def query_user_login(email, password):
+#     table = dynamodb.Table('Users')
+#     response = table.query(
 #         IndexName = 'Email-index',
 #         KeyConditionExpression = Key('Email').eq(email)
 #     )

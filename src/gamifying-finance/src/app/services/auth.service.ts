@@ -29,7 +29,7 @@ export class AuthService {
     return this.loginStatus.asObservable();
   }
 
-  private getToken(): string | null {
+  public getToken(): string | null {
     return localStorage.getItem(this.tokenKey);
   }
 

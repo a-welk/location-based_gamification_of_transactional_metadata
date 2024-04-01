@@ -100,7 +100,6 @@ def get_user_transactions(current_user):
     if not user_id:
         return jsonify({'error': 'Authentication required', 'status': 401}), 401
 
-    user_id = session['user_id']
     transaction_table = dynamodb.Table('Transaction')
     merchant_table = dynamodb.Table('Merchants') 
     data_list = []

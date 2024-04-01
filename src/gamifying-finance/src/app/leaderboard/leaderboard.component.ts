@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { HttpService } from '../services/http.service';
 import {CommonModule, NgIf} from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-leaderboard',
@@ -11,14 +12,16 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./leaderboard.component.css'],
   imports:[LeaderboardComponent, CommonModule, FormsModule]
 })
+
 export class LeaderboardComponent {
   zipcode: string = '';
   leaderboardData: any[] = [];
   selectedOption: string = 'showALL';
   inputted: boolean = false;
+  token: any = '';
 
-  constructor(private httpservice: HttpService) {}
-
+  constructor(private httpservice: HttpService, private authserivce: AuthService) {}
+  
   leaderboard() {
     this.httpservice.leaderboard(this.zipcode)
     .subscribe({
@@ -53,6 +56,12 @@ export class LeaderboardComponent {
           error: error => console.error('Error!', error)
         });
         break;
+      }
+    }
+
+    getToken() {
+      if(this.authserivce.isLoggedIn()) {
+        this.token = this.authserivce.getToken()
       }
     }
   }

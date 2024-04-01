@@ -20,8 +20,6 @@ export class HttpService {
     return this.http.post(loginUrl, { email, password });
   }
 
-
-
   getUserName(): Observable<any> {
     const name = this.apiUrl + '/name';
     return this.http.get(name);

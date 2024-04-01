@@ -139,64 +139,40 @@ def get_user_transaction():
 #         KeyConditionExpression = Key('Email').eq(email)
 #     )
      
-           
-#queries transactions table for all the transactions of a given userID - not working rn bc of UserUUID disputes
-app.route('/transactions', method=['GET'])
-def get_user_transaction(UserID):
-    merchitems = []
-    data_list = []
-    table = dynamodb.Table('Transaction')
-    response = table.query(
-         IndexName = 'UserUUID-index',
-         KeyConditionExpression = Key('UserUUID').eq(UserID)
-    )
-    items = response['Items']
-    for i in range(len(items)):
-        table = dynamodb.Table('Merchants')
-        response = table.query(
-            KeyConditionExpression = Key('MerchantUUID').eq(items[i]['MerchantUUID'])
-        )
-        merchitems = response['Items']
-        try:
-              thing = merchitems[0]['latitude']
-        except KeyError as ke:
-              merchitems[0]['latitude'] = "N/A"
-        try:
-              thing = merchitems[0]['longitude']
-        except KeyError as ke:
-              merchitems[0]['longitude'] = "N/A"
-        try:
-              thing = merchitems[0]['zip']
-        except KeyError as ke:
-              merchitems[0]['zip'] = "N/A"
-        data_dict = {
-            "transactionID": items[i]['TransactionUUID'],
-            "transactionAmount": items[i]['Amount'],
-            "transactionDay": items[i]['Day'],
-            "transactionMonth": items[i]['Month'],
-            "transactionYear": items[i]['Year'],
-            "transactionTime": items[i]['Time'],
-            "transactionMerchantID": items[i]['MerchantUUID'],
-            "transactionMCC": items[i]['MCC'],
-            "transactionLat": merchitems[0]['latitude'],
-            "transactionLong": merchitems[0]['longitude'],
-            "transactionZipcode": merchitems[0]['zip'],
-        }
-        data_list.append(data_dict)
-
-    json_data = json.dumps(data_list, separators=(',', ':'), indent=2)
-
-    with open('output.json', 'w') as json_file:
-        json_file.write(json_data)
-
-    return data_list
+        
 
 
 @app.route('/leaderboard', methods=['POST'])
 def user_leaderboard():
-    zipcode = request.json.get('zipcode')
+
+    token = None
+    auth_header = request.headers.get('Authorization')
+    if auth_header:
+        token = auth_header.split(" ")[1]
+    print(token)
+    user_uuid = ""
+    if token:
+        try:
+            decoded_token = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+            user_uuid = decoded_token['userID']
+            # Continue with the rest of the code using the userID
+        except jwt.InvalidTokenError:
+            return jsonify({'error': 'Invalid token', 'status': 401}), 401
+    else:
+        zipcode = request.json.get('zipcode')
+        return jsonify({'error': 'Token not provided', 'status': 401}), 401
+
+
     leaderboard = []
     table = dynamodb.Table('Users')
+
+    response = table.query(
+        KeyConditionExpression = Key('UserUUID').eq(user_uuid)
+    )
+    items = response['Items']
+    zipcode = items[0]['Zipcode']
+    userName = items[0]['Person']
+
     response = table.query(
         IndexName = 'Zipcode-index',
         KeyConditionExpression = Key('Zipcode').eq(zipcode)
@@ -219,11 +195,18 @@ def user_leaderboard():
                     total += float(amount)
                 except KeyError as ke:
                     total += 0;
-        entry = {
-             'UserUUID': items[x]['UserUUID'],
-             'Name': items[x]['Person'],
-             'Total': round(total, 2)
-        }
+        if (items[x]['UserUUID'] == user_uuid):
+            entry = {
+                'UserUUID': items[x]['UserUUID'],
+                'Name': items[x]['Person'],
+                'Total': round(total, 2)
+            }
+        else:
+            entry = {
+                'UserUUID': items[x]['UserUUID'],
+                'Name': 'Rank #' + str(x),
+                'Total': round(total, 2)
+            }
         leaderboard.append(entry)
     leaderboard = sorted(leaderboard, key= operator.itemgetter('Total'))
     return jsonify(leaderboard), 200

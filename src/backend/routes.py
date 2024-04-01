@@ -7,11 +7,13 @@ import operator
 from decimal import *
 from boto3.dynamodb.conditions import Key, Attr
 import os
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, session
+from flask_session import Session
 from flask_cors import CORS
 from decouple import config
 from datetime import datetime
 import jwt
+from functools import wraps
 
 # load_dotenv()
 # config = {
@@ -21,6 +23,9 @@ import jwt
 app = Flask(__name__)
 CORS(app)
 app.config['SECRET_KEY'] = config('SECRET_KEY')
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "filesystem"
+Session(app)
 
 dynamodb = boto3.resource('dynamodb',
                           aws_access_key_id="AKIA42KZIHZE3NIJXCJ2", #insert YOUR aws access key here
@@ -42,6 +47,22 @@ transactionZipcode = []
 items = []
 
 
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = None
+        if 'Authorization' in request.headers:
+            token = request.headers['Authorization'].split(" ")[1]
+        if not token:
+            return jsonify({'message': 'Token is missing!'}), 401
+        try:
+            data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
+            current_user = data['userID']
+        except:
+            return jsonify({'message': 'Token is invalid!'}), 401
+        return f(current_user, *args, **kwargs)
+    return decorated
+
 @app.route('/login', methods=['POST'])
 def query_user_login():
     email = request.json.get('email')
@@ -58,7 +79,7 @@ def query_user_login():
         UserID = items[0]['UserUUID']
         hashed_password = (items[0]['Password'])
         if bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8')):
-            # return jsonify({'status': '200'})
+            session['user_id'] = UserID
             token = jwt.encode({'userID': UserID, 'email': email}, app.config['SECRET_KEY'], algorithm='HS256')
             return jsonify({'token': token}), 200
         else:
@@ -66,67 +87,99 @@ def query_user_login():
     except IndexError as IE:
           print("Invalid user login credentials")
           return False
-
-# @app.route('/dashboard', method=['GET'])
-# def get_user_name():
-#         table = dynamodb.Table('Users')
-#         response = table.query(
-#         IndexName = 'Email-index',
-#         KeyConditionExpression = Key('Email').eq(email)
-#     )
-     
            
-#queries transactions table for all the transactions of a given userID - not working rn bc of UserUUID disputes
-app.route('/transactions', method=['GET'])
-def get_user_transaction(UserID):
-    merchitems = []
+@app.route('/logout', methods=['POST'])
+def logout():
+    session.clear()
+    return jsonify({'message': 'Logged out'}), 200
+
+@app.route('/transactions', methods=['GET'])
+@token_required
+def get_user_transactions(current_user):
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'error': 'Authentication required', 'status': 401}), 401
+
+    user_id = session['user_id']
+    transaction_table = dynamodb.Table('Transaction')
+    merchant_table = dynamodb.Table('Merchants') 
     data_list = []
-    table = dynamodb.Table('Transaction')
-    response = table.query(
-         IndexName = 'UserUUID-index',
-         KeyConditionExpression = Key('UserUUID').eq(UserID)
+    response = transaction_table.query(
+        IndexName='UserUUID-index',
+        KeyConditionExpression=Key('UserUUID').eq(user_id)
     )
-    items = response['Items']
-    for i in range(len(items)):
-        table = dynamodb.Table('Merchants')
-        response = table.query(
-            KeyConditionExpression = Key('MerchantUUID').eq(items[i]['MerchantUUID'])
+    transactions = response['Items']
+    for transaction in transactions:
+        response = merchant_table.query(
+            KeyConditionExpression=Key('MerchantUUID').eq(transaction['MerchantUUID'])
         )
-        merchitems = response['Items']
-        try:
-              thing = merchitems[0]['latitude']
-        except KeyError as ke:
-              merchitems[0]['latitude'] = "N/A"
-        try:
-              thing = merchitems[0]['longitude']
-        except KeyError as ke:
-              merchitems[0]['longitude'] = "N/A"
-        try:
-              thing = merchitems[0]['zip']
-        except KeyError as ke:
-              merchitems[0]['zip'] = "N/A"
+        merchant = response['Items'][0] if response['Items'] else {}
         data_dict = {
-            "transactionID": items[i]['TransactionUUID'],
-            "transactionAmount": items[i]['Amount'],
-            "transactionDay": items[i]['Day'],
-            "transactionMonth": items[i]['Month'],
-            "transactionYear": items[i]['Year'],
-            "transactionTime": items[i]['Time'],
-            "transactionMerchantID": items[i]['MerchantUUID'],
-            "transactionMCC": items[i]['MCC'],
-            "transactionLat": merchitems[0]['latitude'],
-            "transactionLong": merchitems[0]['longitude'],
-            "transactionZipcode": merchitems[0]['zip'],
+            "transactionID": transaction['TransactionUUID'],
+            "transactionAmount": transaction['Amount'],
+            "transactionDay": transaction.get('Day', 'N/A'),
+            "transactionMonth": transaction.get('Month', 'N/A'),
+            "transactionYear": transaction.get('Year', 'N/A'),
+            "transactionTime": transaction.get('Time', 'N/A'),
+            "transactionMerchantID": transaction['MerchantUUID'],
+            "transactionMCC": transaction.get('MCC', 'N/A'),
+            "transactionLat": merchant.get('latitude', 'N/A'),
+            "transactionLong": merchant.get('longitude', 'N/A'),
+            "transactionZipcode": merchant.get('zip', 'N/A'),
         }
         data_list.append(data_dict)
 
-    json_data = json.dumps(data_list, separators=(',', ':'), indent=2)
+    return jsonify(data_list)
 
-    with open('output.json', 'w') as json_file:
-        json_file.write(json_data)
+# app.route('/transactions', method=['GET'])
+# def get_user_transaction(UserID):
+#     merchitems = []
+#     data_list = []
+#     table = dynamodb.Table('Transaction')
+#     response = table.query(
+#          IndexName = 'UserUUID-index',
+#          KeyConditionExpression = Key('UserUUID').eq(UserID)
+#     )
+#     items = response['Items']
+#     for i in range(len(items)):
+#         table = dynamodb.Table('Merchants')
+#         response = table.query(
+#             KeyConditionExpression = Key('MerchantUUID').eq(items[i]['MerchantUUID'])
+#         )
+#         merchitems = response['Items']
+#         try:
+#               thing = merchitems[0]['latitude']
+#         except KeyError as ke:
+#               merchitems[0]['latitude'] = "N/A"
+#         try:
+#               thing = merchitems[0]['longitude']
+#         except KeyError as ke:
+#               merchitems[0]['longitude'] = "N/A"
+#         try:
+#               thing = merchitems[0]['zip']
+#         except KeyError as ke:
+#               merchitems[0]['zip'] = "N/A"
+#         data_dict = {
+#             "transactionID": items[i]['TransactionUUID'],
+#             "transactionAmount": items[i]['Amount'],
+#             "transactionDay": items[i]['Day'],
+#             "transactionMonth": items[i]['Month'],
+#             "transactionYear": items[i]['Year'],
+#             "transactionTime": items[i]['Time'],
+#             "transactionMerchantID": items[i]['MerchantUUID'],
+#             "transactionMCC": items[i]['MCC'],
+#             "transactionLat": merchitems[0]['latitude'],
+#             "transactionLong": merchitems[0]['longitude'],
+#             "transactionZipcode": merchitems[0]['zip'],
+#         }
+#         data_list.append(data_dict)
 
-    return data_list
+#     json_data = json.dumps(data_list, separators=(',', ':'), indent=2)
 
+#     with open('output.json', 'w') as json_file:
+#         json_file.write(json_data)
+
+#     return data_list
 
 @app.route('/leaderboard', methods=['POST'])
 def user_leaderboard():

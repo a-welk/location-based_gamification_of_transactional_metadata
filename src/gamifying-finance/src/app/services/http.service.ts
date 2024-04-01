@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -20,20 +20,26 @@ export class HttpService {
     return this.http.post(loginUrl, { email, password });
   }
 
+  transactions(page: number = 0, pageSize: number = 10): Observable<any> {
+    const transactionsUrl = `${this.apiUrl}/transactions`;
+    const authToken = localStorage.getItem('authToken');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${authToken}`
+    });
+    let params = new HttpParams()
+    .append('page', page.toString())
+    .append('pageSize', pageSize.toString());
 
-
-  getUserName(): Observable<any> {
-    const name = this.apiUrl + '/name';
-    return this.http.get(name);
+    return this.http.get(transactionsUrl, { headers: headers, params: params });
   }
 
   leaderboard(zipcode: string): Observable<any> {
-    const leaderboardUrl = this.apiUrl +'/leaderboard'; 
+    const leaderboardUrl = this.apiUrl +'/leaderboard';
     return this.http.post(leaderboardUrl,  {zipcode});
   }
 
   monthly_leaderboard(zipcode: string): Observable<any> {
-    const leaderboardUrl = this.apiUrl +'/monthly_leaderboard'; 
+    const leaderboardUrl = this.apiUrl +'/monthly_leaderboard';
     return this.http.post(leaderboardUrl,  {zipcode});
   }
 }

@@ -1,7 +1,9 @@
-<p>transactions works!</p>
-
-<div class="transaction">
-  <p>{{ transactions.date }}</p>
-  <p>{{ transactions.amount }}</p>
-  <!-- Display other transaction details -->
-</div>
+<p-dataView [value]="transactions" layout="list" [paginator]="true" [rows]="rows" [totalRecords]="totalRecords" (onPage)="paginate($event)">
+  <ng-template pTemplate="listItem" let-transaction>
+      <div class="transaction-item">
+          <div>Date: {{transaction.transactionDay}}/{{transaction.transactionMonth}}/{{transaction.transactionYear}}</div>
+          <div>Amount: {{transaction.transactionAmount}}</div>
+          <div>Merchant: {{transaction.transactionMerchantID}}</div>
+      </div>
+  </ng-template>
+</p-dataView>

@@ -181,7 +181,13 @@ def get_user_transactions(current_user):
 #     return data_list
 
 @app.route('/leaderboard', methods=['POST'])
-def user_leaderboard():
+@token_required
+def user_leaderboard(current_user):
+
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'error': 'Authentication required', 'status': 401}), 401
+
     zipcode = request.json.get('zipcode')
     leaderboard = []
     table = dynamodb.Table('Users')
@@ -379,34 +385,6 @@ def insert_merchant(latitude, longitude, zipcode):
             'zip': zipcode
           }
     )
-
-def user_leaderboard(zipcode):
-    leaderboard = []
-    table = dynamodb.Table('Users')
-    response = table.query(
-        IndexName = 'Zipcode-index',
-        KeyConditionExpression = Key('Zipcode').eq(zipcode)
-    )
-    items = response['Items']
-
-    for x in range(len(items)):
-        list = get_user_transaction(items[x]['UserUUID'])
-        total = 0.00
-        for y in range(len(list)):
-                try:
-                    amount = list[y]['transactionAmount']
-                    amount = amount.replace('$', '')
-                    total += float(amount)
-                except KeyError as ke:
-                    total += 0;
-        entry = {
-             'UserUUID': items[x]['UserUUID'],
-             'Name': items[x]['Person'],
-             'Total': round(total, 2)
-        }
-        leaderboard.append(entry)
-    leaderboard = sorted(leaderboard, key= operator.itemgetter('Total'))
-    return leaderboard
 
 
 def update_user_password(UserID, password):

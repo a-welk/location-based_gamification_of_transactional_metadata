@@ -33,13 +33,13 @@ export class HttpService {
     return this.http.get(transactionsUrl, { headers: headers, params: params });
   }
 
-  leaderboard(zipcode: string): Observable<any> {
-    const leaderboardUrl = this.apiUrl +'/leaderboard';
-    return this.http.post(leaderboardUrl,  {zipcode});
+  leaderboard(token: string): Observable<any> {
+    const leaderboardUrl = this.apiUrl +'/leaderboard'; 
+    return this.http.post(leaderboardUrl,  {token});
   }
 
-  monthly_leaderboard(zipcode: string): Observable<any> {
-    const leaderboardUrl = this.apiUrl +'/monthly_leaderboard';
-    return this.http.post(leaderboardUrl,  {zipcode});
+  monthly_leaderboard(token: string): Observable<any> {
+    const leaderboardUrl = this.apiUrl +'/monthly_leaderboard'; 
+    return this.http.post(leaderboardUrl,  {token});
   }
 }

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -18,11 +18,6 @@ export class HttpService {
   login(email: String, password: String): Observable<any> {
     const loginUrl = this.apiUrl + '/login';
     return this.http.post(loginUrl, { email, password });
-  }
-
-  getUserName(): Observable<any> {
-    const name = this.apiUrl + '/name';
-    return this.http.get(name);
   }
 
   leaderboard(token: string): Observable<any> {

@@ -3,7 +3,6 @@ import boto3
 import uuid
 import json
 import operator
-#from dotenv import load_dotenv
 from decimal import *
 from boto3.dynamodb.conditions import Key, Attr
 import os
@@ -12,12 +11,8 @@ from flask_cors import CORS
 from decouple import config
 from datetime import datetime
 import jwt
+from functools import wraps
 
-# load_dotenv()
-# config = {
-#   'accessKey': os.environ.get("accessKey"),
-#   'secretKey': os.environ.get("secretKey"),
-# }
 app = Flask(__name__)
 CORS(app)
 app.config['SECRET_KEY'] = config('SECRET_KEY')
@@ -58,7 +53,7 @@ def query_user_login():
         UserID = items[0]['UserUUID']
         hashed_password = (items[0]['Password'])
         if bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8')):
-            # return jsonify({'status': '200'})
+            session['user_id'] = UserID
             token = jwt.encode({'userID': UserID, 'email': email}, app.config['SECRET_KEY'], algorithm='HS256')
             return jsonify({'token': token}), 200
         else:
@@ -139,7 +134,7 @@ def get_user_transaction():
 #         KeyConditionExpression = Key('Email').eq(email)
 #     )
      
-        
+
 
 
 @app.route('/leaderboard', methods=['POST'])
@@ -161,8 +156,6 @@ def user_leaderboard():
     else:
         zipcode = request.json.get('zipcode')
         return jsonify({'error': 'Token not provided', 'status': 401}), 401
-
-
     leaderboard = []
     table = dynamodb.Table('Users')
 
@@ -405,34 +398,6 @@ def insert_merchant(latitude, longitude, zipcode):
             'zip': zipcode
           }
     )
-
-def user_leaderboard(zipcode):
-    leaderboard = []
-    table = dynamodb.Table('Users')
-    response = table.query(
-        IndexName = 'Zipcode-index',
-        KeyConditionExpression = Key('Zipcode').eq(zipcode)
-    )
-    items = response['Items']
-
-    for x in range(len(items)):
-        list = get_user_transaction(items[x]['UserUUID'])
-        total = 0.00
-        for y in range(len(list)):
-                try:
-                    amount = list[y]['transactionAmount']
-                    amount = amount.replace('$', '')
-                    total += float(amount)
-                except KeyError as ke:
-                    total += 0;
-        entry = {
-             'UserUUID': items[x]['UserUUID'],
-             'Name': items[x]['Person'],
-             'Total': round(total, 2)
-        }
-        leaderboard.append(entry)
-    leaderboard = sorted(leaderboard, key= operator.itemgetter('Total'))
-    return leaderboard
 
 
 def update_user_password(UserID, password):

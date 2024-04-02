@@ -19,25 +19,33 @@ export class LeaderboardComponent {
   selectedOption: string = 'showALL';
   inputted: boolean = false;
   token: any = '';
+  loggedIn: any = false;
 
-  constructor(private httpservice: HttpService, private authserivce: AuthService) {}
+  constructor(private httpservice: HttpService, private authservice: AuthService) {}
+
+  ngOnInIt(): void {
+    this.leaderboard()
+  }
   
   leaderboard() {
-    this.httpservice.leaderboard(this.zipcode)
-    .subscribe({
-      next: response => {
-        console.log(response)
-        this.inputted = true
-        this.leaderboardData = response
-      },
-      error: error => console.error('Error!', error)
-    });
+    if(this.authservice.isLoggedIn())
+      this.token = this.authservice.getToken()
+      this.httpservice.leaderboard(this.token)
+      .subscribe({
+        next: response => {
+          console.log(response)
+          this.inputted = true
+          this.leaderboardData = response
+        },
+        error: error => console.error('Error!', error)
+      });
   }
 
   executeLeaderboardFunction() {
     switch(this.selectedOption) {
       case 'showAll':
-        this.httpservice.leaderboard(this.zipcode)
+        this.token = this.authservice.getToken()
+        this.httpservice.leaderboard(this.token)
         .subscribe({
           next: response => {
             console.log(response)
@@ -47,7 +55,8 @@ export class LeaderboardComponent {
         });
         break;
       case 'showMonth':
-        this.httpservice.monthly_leaderboard(this.zipcode)
+        this.token = this.authservice.getToken()
+        this.httpservice.monthly_leaderboard(this.token)
         .subscribe({
           next: response => {
             console.log(response)
@@ -56,12 +65,6 @@ export class LeaderboardComponent {
           error: error => console.error('Error!', error)
         });
         break;
-      }
-    }
-
-    getToken() {
-      if(this.authserivce.isLoggedIn()) {
-        this.token = this.authserivce.getToken()
       }
     }
   }

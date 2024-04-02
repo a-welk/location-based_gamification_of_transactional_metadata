@@ -145,7 +145,7 @@ def get_user_transaction():
 @app.route('/leaderboard', methods=['POST'])
 def user_leaderboard():
 
-    token = None
+    token = request.json.get('token')
     auth_header = request.headers.get('Authorization')
     if auth_header:
         token = auth_header.split(" ")[1]
@@ -204,7 +204,7 @@ def user_leaderboard():
         else:
             entry = {
                 'UserUUID': items[x]['UserUUID'],
-                'Name': 'Rank #' + str(x),
+                'Name': 'Anonymous',
                 'Total': round(total, 2)
             }
         leaderboard.append(entry)
@@ -214,11 +214,35 @@ def user_leaderboard():
 
 @app.route('/monthly_leaderboard', methods=['POST'])
 def user_leaderboard_from_month():
-    zipcode = request.json.get('zipcode')
-    month = datetime.today().month
-    year = datetime.today().year
+    month = 2
+    year = 2014
+    token = request.json.get('token')
+    auth_header = request.headers.get('Authorization')
+    if auth_header:
+        token = auth_header.split(" ")[1]
+    print(token)
+    user_uuid = ""
+    if token:
+        try:
+            decoded_token = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+            user_uuid = decoded_token['userID']
+            # Continue with the rest of the code using the userID
+        except jwt.InvalidTokenError:
+            return jsonify({'error': 'Invalid token', 'status': 401}), 401
+    else:
+        zipcode = request.json.get('zipcode')
+        return jsonify({'error': 'Token not provided', 'status': 401}), 401
+
+
     leaderboard = []
     table = dynamodb.Table('Users')
+
+    response = table.query(
+        KeyConditionExpression = Key('UserUUID').eq(user_uuid)
+    )
+    items = response['Items']
+    zipcode = items[0]['Zipcode']
+    userName = items[0]['Person']
     response = table.query(
         IndexName = 'Zipcode-index',
         KeyConditionExpression = Key('Zipcode').eq(zipcode)
@@ -241,11 +265,18 @@ def user_leaderboard_from_month():
                     total += float(amount)
                 except KeyError as ke:
                     total += 0;
-        entry = {
-             'UserUUID': items[x]['UserUUID'],
-             'Name': items[x]['Person'],
-             'Total': round(total, 2)
-        }
+                if (items[x]['UserUUID'] == user_uuid):
+                    entry = {
+                        'UserUUID': items[x]['UserUUID'],
+                        'Name': items[x]['Person'],
+                        'Total': round(total, 2)
+                    }
+                else:
+                    entry = {
+                        'UserUUID': items[x]['UserUUID'],
+                        'Name': 'Anonymous',
+                        'Total': round(total, 2)
+                    }
         leaderboard.append(entry)
     leaderboard = sorted(leaderboard, key= operator.itemgetter('Total'))
     return leaderboard

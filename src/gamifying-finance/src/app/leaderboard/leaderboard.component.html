@@ -1,14 +1,6 @@
 <div class="container">
   <h2 class="header">Leaderboard</h2>
-  <form (ngSubmit)="leaderboard()">
-    <div class="form">
-      <label for="zipcode">Enter Zipcode:</label>
-      <input type="text" id="zipcode" [(ngModel)]="zipcode" name="zipcode" required placeholder="Zipcode" />
-      <button type="submit">Submit</button>
-    </div>
-  </form>
 
-  <div *ngIf="leaderboardData.length > 0; else noUsers">
     <h2>Leaderboard</h2>
 
     <!-- Dropdown menu -->
@@ -35,9 +27,4 @@
         </tr>
       </tbody>
     </table>
-  </div>
-
-  <ng-template #noUsers>
-    <h2 *ngIf="inputted">No users in specified zipcode</h2>
-  </ng-template>
 </div>

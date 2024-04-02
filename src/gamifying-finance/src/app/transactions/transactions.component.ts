@@ -1,42 +1,29 @@
+
+import { OnInit } from '@angular/core';
+import { TransactionService } from '../services/transactions.service';
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { DataViewModule } from 'primeng/dataview';
-import { PaginatorModule } from 'primeng/paginator';
-import { HttpService } from '../services/http.service';
+import { NgForOf } from '@angular/common'; // Import NgFor directive
 
 @Component({
-  selector: 'app-transactions',
-  standalone: true,
-  imports: [CommonModule, DataViewModule, PaginatorModule],
+  selector: 'app-transactions-component',
   templateUrl: './transactions.component.html',
-  styleUrl: './transactions.component.css'
+  standalone: true,
+  imports: [NgForOf], // Include NgForOf in the imports array
 })
-export class TransactionsComponent {
+
+export class TransactionsComponent implements OnInit {
   transactions: any[] = [];
-  totalRecords: number = 0;
-  rows: number = 10;
 
-  constructor(private httpService: HttpService) {
-  }
+  constructor(private dataService: TransactionService) { }
 
-  ngOnInit() {
-    this.loadTransactions();
-  }
-
-  loadTransactions(page: number = 0) {
-    this.httpService.transactions(page, this.rows).subscribe({
-      next: (data) => {
-        this.transactions = data.transactions;
-        this.totalRecords = data.totalRecords;
-      },
-      error: (error) => {
-        console.error('Failed to load transactions:', error);
-      }
+  ngOnInit(): void {
+    this.dataService.fetchData().subscribe((data: any[]) => { // Specify the type of the data parameter
+      this.transactions = data.map((transaction: any) => { // Specify the type of the transaction parameter
+        // Destructure to exclude unwanted properties and return the rest
+        const { merchantUUID, UserUUID, UseChip, 'Is Fraud?': isFraud, ...rest } = transaction;
+        console.log('rest', rest);
+        return rest;
+      });
     });
   }
-
-  paginate(event: any) {
-    this.loadTransactions(event.page);
-  }
 }
-

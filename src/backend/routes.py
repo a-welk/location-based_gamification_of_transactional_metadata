@@ -6,7 +6,7 @@ import operator
 from decimal import *
 from boto3.dynamodb.conditions import Key, Attr
 import os
-from flask import Flask, jsonify, request, session
+from flask import Flask, jsonify, request, redirect, url_for
 from flask_cors import CORS
 from decouple import config
 from datetime import datetime
@@ -61,68 +61,111 @@ def query_user_login():
     except IndexError as IE:
           print("Invalid user login credentials")
           return False
-           
 
-app.route('/transactions', method=['GET'])
-def get_user_transaction(UserID):
-    merchitems = []
-    data_list = []
-    table = dynamodb.Table('Transaction')
-    response = table.query(
-         IndexName = 'UserUUID-index',
-         KeyConditionExpression = Key('UserUUID').eq(UserID)
-    )
-    items = response['Items']
-    for i in range(len(items)):
-        table = dynamodb.Table('Merchants')
-        response = table.query(
-            KeyConditionExpression = Key('MerchantUUID').eq(items[i]['MerchantUUID'])
+@app.route('/getTransactions', methods=['GET'])
+def get_user_transaction():
+    # Initialize a DynamoDB resource
+    dynamodb = boto3.resource('dynamodb',
+                              aws_access_key_id='AKIA42KZIHZE3NIJXCJ2',
+                              aws_secret_access_key='ULV7X90uwRxEu72rf4xDCoXmZXltARqt7TJ9zRkx',
+                              region_name="us-east-1")
+    
+    # Specify your Transaction and Merchants table names
+    transactions_table_name = 'Transaction'
+    merchants_table_name = 'Merchants'
+    token = None
+    auth_header = request.headers.get('Authorization')
+    if auth_header:
+        token = auth_header.split(" ")[1]
+    print(token)
+    user_uuid = ""
+    if token:
+        try:
+            decoded_token = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+            user_uuid = decoded_token['userID']
+            # Continue with the rest of the code using the userID
+        except jwt.InvalidTokenError:
+            return jsonify({'error': 'Invalid token', 'status': 401}), 401
+    else:
+        return jsonify({'error': 'Token not provided', 'status': 401}), 401
+    
+    # Initialize the tables
+    transactions_table = dynamodb.Table(transactions_table_name)
+    merchants_table = dynamodb.Table(merchants_table_name)
+    
+    
+    try:
+        # Perform the query operation for transactions
+        response = transactions_table.query(
+            IndexName='UserUUID-index',  # Use the exact name of your GSI
+            KeyConditionExpression=boto3.dynamodb.conditions.Key('UserUUID').eq(user_uuid)
         )
-        merchitems = response['Items']
-        try:
-              thing = merchitems[0]['latitude']
-        except KeyError as ke:
-              merchitems[0]['latitude'] = "N/A"
-        try:
-              thing = merchitems[0]['longitude']
-        except KeyError as ke:
-              merchitems[0]['longitude'] = "N/A"
-        try:
-              thing = merchitems[0]['zip']
-        except KeyError as ke:
-              merchitems[0]['zip'] = "N/A"
-        data_dict = {
-            "transactionID": items[i]['TransactionUUID'],
-            "transactionAmount": items[i]['Amount'],
-            "transactionDay": items[i]['Day'],
-            "transactionMonth": items[i]['Month'],
-            "transactionYear": items[i]['Year'],
-            "transactionTime": items[i]['Time'],
-            "transactionMerchantID": items[i]['MerchantUUID'],
-            "transactionMCC": items[i]['MCC'],
-            "transactionLat": merchitems[0]['latitude'],
-            "transactionLong": merchitems[0]['longitude'],
-            "transactionZipcode": merchitems[0]['zip'],
-        }
-        data_list.append(data_dict)
+        
+        transactions = response['Items'][:50]  # Limiting to first 50 transactions for demonstration
+        
+        # Loop through each transaction to fetch merchant's latitude and longitude
+        for transaction in transactions:
+            if 'Zip' not in transaction:
+                transaction['Zip'] = "Not Available"
 
-    json_data = json.dumps(data_list, separators=(',', ':'), indent=2)
+            merchant_uuid = transaction['MerchantUUID']
+            
+            # Query the Merchants table using MerchantUUID
+            merchant_response = merchants_table.get_item(
+                Key={'MerchantUUID': merchant_uuid}
+            )
 
-    with open('output.json', 'w') as json_file:
-        json_file.write(json_data)
+            
+            # Check if merchant details are found
+            if 'Item' in merchant_response:
+                merchant_details = merchant_response['Item']
+                # Add latitude and longitude to the transaction dictionary
+                transaction['Latitude'] = merchant_details.get('latitude', 'Not Available')
+                transaction['Longitude'] = merchant_details.get('longitude', 'Not Available')
+                
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    return jsonify(transactions)        
 
-    return data_list
+# def query_user_login(email, password):
+#     table = dynamodb.Table('Users')
+#     response = table.query(
+#         IndexName = 'Email-index',
+#         KeyConditionExpression = Key('Email').eq(email)
+#     )
+     
+
+
 
 @app.route('/leaderboard', methods=['POST'])
 def user_leaderboard():
 
-    user_id = session.get('user_id')
-    if not user_id:
-        return jsonify({'error': 'Authentication required', 'status': 401}), 401
-
-    zipcode = request.json.get('zipcode')
+    token = request.json.get('token')
+    auth_header = request.headers.get('Authorization')
+    if auth_header:
+        token = auth_header.split(" ")[1]
+    print(token)
+    user_uuid = ""
+    if token:
+        try:
+            decoded_token = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+            user_uuid = decoded_token['userID']
+            # Continue with the rest of the code using the userID
+        except jwt.InvalidTokenError:
+            return jsonify({'error': 'Invalid token', 'status': 401}), 401
+    else:
+        zipcode = request.json.get('zipcode')
+        return jsonify({'error': 'Token not provided', 'status': 401}), 401
     leaderboard = []
     table = dynamodb.Table('Users')
+
+    response = table.query(
+        KeyConditionExpression = Key('UserUUID').eq(user_uuid)
+    )
+    items = response['Items']
+    zipcode = items[0]['Zipcode']
+    userName = items[0]['Person']
+
     response = table.query(
         IndexName = 'Zipcode-index',
         KeyConditionExpression = Key('Zipcode').eq(zipcode)
@@ -145,11 +188,18 @@ def user_leaderboard():
                     total += float(amount)
                 except KeyError as ke:
                     total += 0;
-        entry = {
-             'UserUUID': items[x]['UserUUID'],
-             'Name': items[x]['Person'],
-             'Total': round(total, 2)
-        }
+        if (items[x]['UserUUID'] == user_uuid):
+            entry = {
+                'UserUUID': items[x]['UserUUID'],
+                'Name': items[x]['Person'],
+                'Total': round(total, 2)
+            }
+        else:
+            entry = {
+                'UserUUID': items[x]['UserUUID'],
+                'Name': 'Anonymous',
+                'Total': round(total, 2)
+            }
         leaderboard.append(entry)
     leaderboard = sorted(leaderboard, key= operator.itemgetter('Total'))
     return jsonify(leaderboard), 200
@@ -157,11 +207,35 @@ def user_leaderboard():
 
 @app.route('/monthly_leaderboard', methods=['POST'])
 def user_leaderboard_from_month():
-    zipcode = request.json.get('zipcode')
-    month = datetime.today().month
-    year = datetime.today().year
+    month = 2
+    year = 2014
+    token = request.json.get('token')
+    auth_header = request.headers.get('Authorization')
+    if auth_header:
+        token = auth_header.split(" ")[1]
+    print(token)
+    user_uuid = ""
+    if token:
+        try:
+            decoded_token = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+            user_uuid = decoded_token['userID']
+            # Continue with the rest of the code using the userID
+        except jwt.InvalidTokenError:
+            return jsonify({'error': 'Invalid token', 'status': 401}), 401
+    else:
+        zipcode = request.json.get('zipcode')
+        return jsonify({'error': 'Token not provided', 'status': 401}), 401
+
+
     leaderboard = []
     table = dynamodb.Table('Users')
+
+    response = table.query(
+        KeyConditionExpression = Key('UserUUID').eq(user_uuid)
+    )
+    items = response['Items']
+    zipcode = items[0]['Zipcode']
+    userName = items[0]['Person']
     response = table.query(
         IndexName = 'Zipcode-index',
         KeyConditionExpression = Key('Zipcode').eq(zipcode)
@@ -184,11 +258,18 @@ def user_leaderboard_from_month():
                     total += float(amount)
                 except KeyError as ke:
                     total += 0;
-        entry = {
-             'UserUUID': items[x]['UserUUID'],
-             'Name': items[x]['Person'],
-             'Total': round(total, 2)
-        }
+                if (items[x]['UserUUID'] == user_uuid):
+                    entry = {
+                        'UserUUID': items[x]['UserUUID'],
+                        'Name': items[x]['Person'],
+                        'Total': round(total, 2)
+                    }
+                else:
+                    entry = {
+                        'UserUUID': items[x]['UserUUID'],
+                        'Name': 'Anonymous',
+                        'Total': round(total, 2)
+                    }
         leaderboard.append(entry)
     leaderboard = sorted(leaderboard, key= operator.itemgetter('Total'))
     return leaderboard

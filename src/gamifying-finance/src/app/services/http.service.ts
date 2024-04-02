@@ -20,19 +20,6 @@ export class HttpService {
     return this.http.post(loginUrl, { email, password });
   }
 
-  transactions(page: number = 0, pageSize: number = 10): Observable<any> {
-    const transactionsUrl = `${this.apiUrl}/transactions`;
-    const authToken = localStorage.getItem('authToken');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${authToken}`
-    });
-    let params = new HttpParams()
-    .append('page', page.toString())
-    .append('pageSize', pageSize.toString());
-
-    return this.http.get(transactionsUrl, { headers: headers, params: params });
-  }
-
   leaderboard(token: string): Observable<any> {
     const leaderboardUrl = this.apiUrl +'/leaderboard'; 
     return this.http.post(leaderboardUrl,  {token});

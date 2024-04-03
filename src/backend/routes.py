@@ -53,7 +53,7 @@ def query_user_login():
         UserID = items[0]['UserUUID']
         hashed_password = (items[0]['Password'])
         if bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8')):
-            session['user_id'] = UserID
+            #session['user_id'] = UserID
             token = jwt.encode({'userID': UserID, 'email': email}, app.config['SECRET_KEY'], algorithm='HS256')
             return jsonify({'token': token}), 200
         else:

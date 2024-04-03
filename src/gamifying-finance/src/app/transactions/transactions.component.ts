@@ -1,5 +1,4 @@
 
-// src/app/transactions/transactions.component.ts
 import { OnInit } from '@angular/core';
 import { TransactionService } from '../services/transactions.service';
 import { Component } from '@angular/core';
@@ -11,6 +10,7 @@ import { NgForOf } from '@angular/common'; // Import NgFor directive
   standalone: true,
   imports: [NgForOf], // Include NgForOf in the imports array
 })
+
 export class TransactionsComponent implements OnInit {
   transactions: any[] = [];
 
@@ -27,4 +27,3 @@ export class TransactionsComponent implements OnInit {
     });
   }
 }
-

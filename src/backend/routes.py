@@ -214,8 +214,8 @@ def user_leaderboard():
 
 @app.route('/monthly_leaderboard', methods=['POST'])
 def user_leaderboard_from_month():
-    month = 2
-    year = 2014
+    month = request.json.get('selectedMonth')
+    year = request.json.get('selectedYear')
     token = request.json.get('token')
     auth_header = request.headers.get('Authorization')
     if auth_header:
@@ -277,6 +277,20 @@ def user_leaderboard_from_month():
                         'Name': 'Anonymous',
                         'Total': round(total, 2)
                     }
+            else:
+                if (items[x]['UserUUID'] == user_uuid):
+                    entry = {
+                        'UserUUID': items[x]['UserUUID'],
+                        'Name': items[x]['Person'],
+                        'Total': round(total, 2)
+                    }
+                else:
+                    entry = {
+                        'UserUUID': items[x]['UserUUID'],
+                        'Name': 'Anonymous',
+                        'Total': round(total, 2)
+                    }
+            
         leaderboard.append(entry)
     leaderboard = sorted(leaderboard, key= operator.itemgetter('Total'))
     return leaderboard

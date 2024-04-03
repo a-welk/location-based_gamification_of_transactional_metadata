@@ -30,8 +30,8 @@ export class HttpService {
     return this.http.post(leaderboardUrl,  {token});
   }
 
-  monthly_leaderboard(token: string): Observable<any> {
+  monthly_leaderboard(token: string, selectedMonth: any, selectedYear: any): Observable<any> {
     const leaderboardUrl = this.apiUrl +'/monthly_leaderboard'; 
-    return this.http.post(leaderboardUrl,  {token});
+    return this.http.post(leaderboardUrl,  {token, selectedMonth, selectedYear});
   }
 }

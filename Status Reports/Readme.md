@@ -33,17 +33,17 @@ Status Report Template: https://github.com/VCU-CS-Capstone/0000---Capstone-Templ
 |---|---|---|---|
 | Week 1 Status Report |Recreate ALL tables with UUID instead of standard number ID|Tables recreated| |
 | Week 2 Status Report |Restructure data retrieval and insertion functions to work with UUID| |UUID is confusing|
-| Week 3 Status Report | | | |
-| Week 4 Status Report | | | |
-| Week 5 Status Report | | | |
-| Week 6 Status Report | | | |
-| Week 7 Status Report | | | |
-| Week 8 Status Report | | | |
-| Week 9 Status Report | | | |
-| Week 10 Status Report | | | |
-| Week 11 Status Report | | | |
-| Week 12 Status Report | | | |
-| Week 13 Status Report | | | |
+| Week 3 Status Report |Work on transactions and onboarding components|created more functions for database insertion and retrieval|Angular hydration errors|
+| Week 4 Status Report |Finish up DB functions, continue working on onboarding and transactions components|Login component works properly|onboarding is taking awhile|
+| Week 5 Status Report |fix repository| |needed to revert to past commits to fix Angular errors|
+| Week 6 Status Report |start on leaderboard function|generated leaderboard and started| |
+| Week 7 Status Report |continue working on leaderboard, transactions, and onboarding components| |transactions responsibilities keep moving between group members|
+| Week 8 Status Report |Spring break|spring break|spring break|
+| Week 9 Status Report |implement leaderboard component, create authentication handling for logins|leaderboard component generated and started on|Angular is confusing|
+| Week 10 Status Report |continue working on leaderboard|leaderboard function is implemented in component and works given a zipcode to check|authentication errors|
+| Week 11 Status Report |work on basing leaderboard on logged in user and not zipcode|modified leaderboard function to retrieve leaderboard of a given userID's zipcode|more angular errors, onboarding|
+| Week 12 Status Report |implement user autheticated leaderboard|leaderboard is styled like the rest of the app|onboarding is STILL not done|
+| Week 13 Status Report |continue building web app|leaderboard is now based on logged in user and does not show named of other users in zipcode|ONBOARDING|
 | Week 14 Status Report | | | |
 | Week 15 Status Report | | | |
 | Week 16 Status Report | | | |

@@ -5,8 +5,8 @@
     <input type="password" id="password" name="password" [(ngModel)]="password" required placeholder="Password">
     <input type="password" id="confirmPassword" name="confirmPassword" [(ngModel)]="confirmPassword" required placeholder="Confirm Password">
     <p *ngIf="!matching">Passwords do not match</p>
-    <button type="button" (click)="closeDialog()">Close</button>
     <button type="submit">Sign up</button>
+    <button type="button" (click)="closeDialog()">Close</button>
   </form>
 </div>
 

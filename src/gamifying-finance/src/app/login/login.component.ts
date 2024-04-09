@@ -31,6 +31,7 @@ export class LoginComponent {
             console.log(this.email)
             console.log(this.password)
             console.log('Successfully logged in! Token received:', response.token);
+            this.closeDialog();
             this.Router.navigate(['/dashboard'])
           }
 

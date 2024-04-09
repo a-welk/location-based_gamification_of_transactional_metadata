@@ -17,6 +17,8 @@ export class SignupComponent {
   password: string = '';
   confirmPassword: string = '';
   matching: boolean = true;
+  isValidEmail: boolean = true;
+  isPasswordEmpty: boolean = false;
 
   constructor(private HttpService: HttpService, private dialogRef: MatDialogRef<SignupComponent>) {}
 
@@ -24,11 +26,23 @@ export class SignupComponent {
     this.matching = this.password === this.confirmPassword;
   }
 
+    validateEmail() {
+      const regex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+      this.isValidEmail = regex.test(this.email);
+    }
+
+    checkPasswordEmpty() {
+      this.isPasswordEmpty = !this.password;
+    }
+
   signup() {
     this.checkPasswordMatch();
     if (this.matching == false) {
       console.error('Passwords do not match');
-      // Deal with false
+    } else if (!this.validateEmail) {
+      this.isValidEmail = false;
+    } else if (this.isPasswordEmpty) {
+      this.isPasswordEmpty = true;
     } else {
       this.HttpService.signup(this.email, this.password)
         .subscribe({

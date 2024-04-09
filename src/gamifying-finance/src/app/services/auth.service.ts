@@ -37,7 +37,7 @@ export class AuthService {
     localStorage.setItem(this.tokenKey, token);
   }
 
-  private clearToken(): void {
+  public clearToken(): void {
     localStorage.removeItem(this.tokenKey);
   }
 }

@@ -28,8 +28,7 @@ export class LoginComponent {
       .subscribe({
         next: response => {
           if (response.token) {
-            console.log(this.email)
-            console.log(this.password)
+            localStorage.setItem('authToken', response.token);
             console.log('Successfully logged in! Token received:', response.token);
             this.closeDialog();
             this.Router.navigate(['/dashboard'])

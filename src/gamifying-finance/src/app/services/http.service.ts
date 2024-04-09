@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -20,20 +20,13 @@ export class HttpService {
     return this.http.post(loginUrl, { email, password });
   }
 
-
-
-  getUserName(): Observable<any> {
-    const name = this.apiUrl + '/name';
-    return this.http.get(name);
-  }
-
-  leaderboard(zipcode: string): Observable<any> {
+  leaderboard(token: string): Observable<any> {
     const leaderboardUrl = this.apiUrl +'/leaderboard'; 
-    return this.http.post(leaderboardUrl,  {zipcode});
+    return this.http.post(leaderboardUrl,  {token});
   }
 
-  monthly_leaderboard(zipcode: string): Observable<any> {
+  monthly_leaderboard(token: string, selectedMonth: any, selectedYear: any): Observable<any> {
     const leaderboardUrl = this.apiUrl +'/monthly_leaderboard'; 
-    return this.http.post(leaderboardUrl,  {zipcode});
+    return this.http.post(leaderboardUrl,  {token, selectedMonth, selectedYear});
   }
 }

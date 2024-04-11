@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpService } from '../services/http.service';
 import { AuthService } from '../services/auth.service';
 import { MatDialogRef } from '@angular/material/dialog';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-signup',
@@ -20,7 +21,7 @@ export class SignupComponent {
   isValidEmail: boolean = true;
   isPasswordEmpty: boolean = false;
 
-  constructor(private HttpService: HttpService, private dialogRef: MatDialogRef<SignupComponent>) {}
+  constructor(private HttpService: HttpService, private dialogRef: MatDialogRef<SignupComponent>, private Router: Router) {}
 
   checkPasswordMatch() {
     this.matching = this.password === this.confirmPassword;
@@ -39,6 +40,7 @@ export class SignupComponent {
     this.checkPasswordMatch();
     if (this.matching == false) {
       console.error('Passwords do not match');
+
     } else if (!this.validateEmail) {
       this.isValidEmail = false;
     } else if (this.isPasswordEmpty) {
@@ -46,7 +48,11 @@ export class SignupComponent {
     } else {
       this.HttpService.signup(this.email, this.password)
         .subscribe({
-          next: response => console.log('Success!', response),
+          next: response => {
+            console.log('Success!', response)
+            this.closeDialog();
+            this.Router.navigate(['/dashboard'])
+          },
           error: error => console.error('Error!', error)
         });
     }

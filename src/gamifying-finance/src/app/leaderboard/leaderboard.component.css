@@ -14,4 +14,65 @@
     background-color: #004977;
     color: #fff;
   }
+
+  .container {
+    font-family: 'Jost', sans-serif;
+  }
+  
+  .header {
+    text-align: center;
+    font-size: 32px;
+    margin-bottom: 50px;
+  }
+  
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  input[type="text"],
+  input[type="password"],
+  select,
+  button {
+    width: 50%; /* Adjust width as needed */
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin: 0 auto;
+    display: block;
+    margin-bottom: 10px;
+  }
+  
+  select {
+    width: 20%; /* Adjust width as needed */
+  }
+  
+  button {
+    width: 30%; /* Adjust width as needed */
+    padding: 8px; /* Adjust padding as needed */
+    background-color: #004977;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  button:hover {
+    background-color: #2976a6;
+  }
+  
+  .buttonContainer {
+    text-align: center;
+  }
+  
+  .form-group.inline {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .select-container {
+    width: 25%; /* Adjust width as needed */
+  }
+  
+  
+  
   

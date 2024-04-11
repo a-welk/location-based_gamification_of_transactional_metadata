@@ -150,7 +150,6 @@ def get_user_transaction():
     return jsonify(transactions)        
 
 
-
 @app.route('/leaderboard', methods=['POST'])
 def user_leaderboard():
 
@@ -188,7 +187,6 @@ def user_leaderboard():
 
     table = dynamodb.Table('Transaction')
     for x in range(len(items)):
-        #list = test_transactions(items[x]['UserUUID'])
         list = table.query(
              IndexName = 'UserUUID-index',
              KeyConditionExpression = Key('UserUUID').eq(items[x]['UserUUID'])
@@ -221,8 +219,8 @@ def user_leaderboard():
 
 @app.route('/monthly_leaderboard', methods=['POST'])
 def user_leaderboard_from_month():
-    month = 2
-    year = 2014
+    month = request.json.get('selectedMonth')
+    year = request.json.get('selectedYear')
     token = request.json.get('token')
     auth_header = request.headers.get('Authorization')
     if auth_header:
@@ -263,7 +261,9 @@ def user_leaderboard_from_month():
              KeyConditionExpression = Key('UserUUID').eq(items[x]['UserUUID'])
         )
         transactions = list['Items']
+        budget = float(items[x]['Budget'])
         total = 0.00
+        points = 0
         for y in range(len(transactions)):
             if(transactions[y]['Month'] == str(month) and transactions[y]['Year'] == str(year)):
                 try:
@@ -272,21 +272,64 @@ def user_leaderboard_from_month():
                     total += float(amount)
                 except KeyError as ke:
                     total += 0;
+                points = budget_points(total, budget)
                 if (items[x]['UserUUID'] == user_uuid):
                     entry = {
                         'UserUUID': items[x]['UserUUID'],
                         'Name': items[x]['Person'],
-                        'Total': round(total, 2)
+                        'Points': round(points, 2)
                     }
                 else:
                     entry = {
                         'UserUUID': items[x]['UserUUID'],
                         'Name': 'Anonymous',
-                        'Total': round(total, 2)
+                        'Points': round(points, 2)
                     }
+            else:
+                if (items[x]['UserUUID'] == user_uuid):
+                    entry = {
+                        'UserUUID': items[x]['UserUUID'],
+                        'Name': items[x]['Person'],
+                        'Points': round(points, 2)
+                    }
+                else:
+                    entry = {
+                        'UserUUID': items[x]['UserUUID'],
+                        'Name': 'Anonymous',
+                        'Points': round(points, 2)
+                    }
+            
         leaderboard.append(entry)
-    leaderboard = sorted(leaderboard, key= operator.itemgetter('Total'))
+    leaderboard = sorted(leaderboard, key= operator.itemgetter('Points'), reverse=True)
     return leaderboard
+
+
+def budget_points(total, budget):
+    points = 0
+    if(total / budget <= .1):
+        points += 10
+    elif(total / budget <= .2 and total / budget > .1):
+        points += 9
+    elif(total / budget <= .3 and total / budget > .2):
+         points += 8
+    elif(total / budget <= .4 and total / budget > .3):
+         points += 7
+    elif(total / budget <= .5 and total / budget > .4):
+         points += 6
+    elif(total / budget <= .6 and total / budget > .5):
+         points += 5
+    elif(total / budget <= .7 and total / budget > .6):
+         points += 4
+    elif(total / budget <= .8 and total / budget > .7):
+         points += 3
+    elif(total / budget <= .9 and total / budget > .8):
+         points += 2
+    elif(total / budget <= 1 and total / budget > .9):
+         points += 1
+    elif(total / budget > 1):
+         points += 0
+
+    return points
     
 #inserts new users into Users table
 def insert_user(address, apartment, birthMonth, birthYear, city, age, email, FICOscore, gender, lat, long, numCards, password, perCapitaIncome, name, retirementAge, state, debt, annualIncome, zipcode):

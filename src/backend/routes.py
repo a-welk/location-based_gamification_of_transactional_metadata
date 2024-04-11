@@ -306,27 +306,28 @@ def user_leaderboard_from_month():
 
 def budget_points(total, budget):
     points = 0
-    if(total / budget <= .1):
+    ratio = total / budget
+    if(ratio <= .1):
         points += 10
-    elif(total / budget <= .2 and total / budget > .1):
+    elif(ratio <= .2 and ratio > .1):
         points += 9
-    elif(total / budget <= .3 and total / budget > .2):
+    elif(ratio <= .3 and ratio > .2):
          points += 8
-    elif(total / budget <= .4 and total / budget > .3):
+    elif(ratio <= .4 and ratio > .3):
          points += 7
-    elif(total / budget <= .5 and total / budget > .4):
+    elif(ratio <= .5 and ratio > .4):
          points += 6
-    elif(total / budget <= .6 and total / budget > .5):
+    elif(ratio <= .6 and ratio > .5):
          points += 5
-    elif(total / budget <= .7 and total / budget > .6):
+    elif(ratio <= .7 and ratio > .6):
          points += 4
-    elif(total / budget <= .8 and total / budget > .7):
+    elif(ratio <= .8 and ratio > .7):
          points += 3
-    elif(total / budget <= .9 and total / budget > .8):
+    elif(ratio <= .9 and ratio > .8):
          points += 2
-    elif(total / budget <= 1 and total / budget > .9):
+    elif(ratio <= 1 and ratio > .9):
          points += 1
-    elif(total / budget > 1):
+    elif(ratio > 1):
          points += 0
 
     return points

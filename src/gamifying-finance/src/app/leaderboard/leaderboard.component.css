@@ -43,17 +43,21 @@
   }
   
   select {
-    width: 20%; /* Adjust width as needed */
+    width: 10%; /* Set width to auto to allow natural width */
+    display: inline-block; /* Display inline-block to align horizontally */
+    margin-right: 10px; /* Adjust margin as needed */
   }
   
   button {
-    width: 30%; /* Adjust width as needed */
+    width: 15%; /* Adjust width as needed */
     padding: 8px; /* Adjust padding as needed */
     background-color: #004977;
     color: #fff;
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    display: inline-block; /* Display inline-block to align horizontally */
+    vertical-align: top; /* Align button with the top of the select elements */
   }
   
   button:hover {

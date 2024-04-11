@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { HttpService } from './http.service';
+import { LocalstorageService } from './localstorage.service';
 
 
 @Injectable({
@@ -10,7 +11,7 @@ export class AuthService {
   private tokenKey = 'authToken';
   private loginStatus = new BehaviorSubject<boolean>(false);
 
-  constructor(private HttpService: HttpService) {
+  constructor(private HttpService: HttpService, private StorageService: LocalstorageService) {
     this.checkInitialLoginStatus();
   }
 
@@ -38,15 +39,15 @@ export class AuthService {
   }
 
   public getToken(): string | null {
-    return localStorage.getItem(this.tokenKey);
+    return this.StorageService.getItem(this.tokenKey);
   }
 
   private setToken(token: string): void {
-    localStorage.setItem(this.tokenKey, token);
+    this.StorageService.setItem(this.tokenKey, token);
   }
 
   public clearToken(): void {
-    localStorage.removeItem(this.tokenKey);
+    this.StorageService.removeItem(this.tokenKey);
     this.loginStatus.next(false);
   }
 }

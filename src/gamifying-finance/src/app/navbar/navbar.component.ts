@@ -28,6 +28,7 @@ export class NavbarComponent implements OnInit {
   signupDialogRef!: MatDialogRef<SignupComponent>;
 
   constructor(public AuthService: AuthService, private dialogService: DialogService) {
+
   }
 
   ngOnInit() {
@@ -40,5 +41,10 @@ export class NavbarComponent implements OnInit {
 
   openSignupDialog(): void {
     this.dialogService.openSignupDialog();
+  }
+
+  logout(): void {
+    this.AuthService.clearToken();
+    console.log("token cleared");
   }
 }

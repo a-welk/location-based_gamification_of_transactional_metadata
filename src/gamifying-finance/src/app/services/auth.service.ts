@@ -10,7 +10,9 @@ export class AuthService {
   private tokenKey = 'authToken';
   private loginStatus = new BehaviorSubject<boolean>(false);
 
-  constructor(private HttpService: HttpService) {}
+  constructor(private HttpService: HttpService) {
+    this.checkInitialLoginStatus();
+  }
 
   login(email: string, password: string): Observable<any> {
     return this.HttpService.login(email, password).pipe(
@@ -18,11 +20,17 @@ export class AuthService {
         if (response.token) {
           this.setToken(response.token);
           this.loginStatus.next(true);
+          console.log(this.loginStatus);
           console.log('Successful log in from AuthService:', response.token);
           console.log('Login Status:', this.loginStatus.value);
         }
       })
     );
+  }
+
+  checkInitialLoginStatus() {
+    const token = this.getToken();
+    this.loginStatus.next(!!token);
   }
 
   isLoggedIn(): Observable<boolean> {
@@ -39,5 +47,6 @@ export class AuthService {
 
   public clearToken(): void {
     localStorage.removeItem(this.tokenKey);
+    this.loginStatus.next(false);
   }
 }

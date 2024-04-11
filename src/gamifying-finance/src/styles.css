@@ -1,1 +1,7 @@
+@import "bootstrap/dist/css/bootstrap.css";
 /* You can add global styles to this file, and also import other style files */
+.feature-icon {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 0.75rem;
+}

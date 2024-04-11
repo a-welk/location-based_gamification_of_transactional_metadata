@@ -7,6 +7,7 @@ import { RouterModule } from '@angular/router';
 import { NavbarComponent } from './navbar/navbar.component';
 import { LoginComponent } from './login/login.component';
 import { LeaderboardComponent } from './leaderboard/leaderboard.component';
+import { Onboarding1Component } from './onboarding1/onboarding1.component';
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -17,7 +18,8 @@ import { LeaderboardComponent } from './leaderboard/leaderboard.component';
     RouterModule,
     CommonModule,
     FormsModule,
-    LeaderboardComponent
+    LeaderboardComponent,
+    Onboarding1Component
   ],
   styleUrls: ['./app.component.css']
 }) 

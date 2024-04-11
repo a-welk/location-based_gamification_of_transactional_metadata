@@ -16,7 +16,6 @@ from functools import wraps
 app = Flask(__name__)
 CORS(app)
 app.config['SECRET_KEY'] = config('SECRET_KEY')
-
 dynamodb = boto3.resource('dynamodb',
                           aws_access_key_id="AKIA42KZIHZE3NIJXCJ2", #insert YOUR aws access key here
                           aws_secret_access_key="ULV7X90uwRxEu72rf4xDCoXmZXltARqt7TJ9zRkx", #insert YOUR aws sec

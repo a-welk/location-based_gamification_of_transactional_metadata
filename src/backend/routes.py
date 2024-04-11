@@ -149,14 +149,6 @@ def get_user_transaction():
         return jsonify({"error": str(e)}), 500
     return jsonify(transactions)        
 
-# def query_user_login(email, password):
-#     table = dynamodb.Table('Users')
-#     response = table.query(
-#         IndexName = 'Email-index',
-#         KeyConditionExpression = Key('Email').eq(email)
-#     )
-     
-
 
 
 @app.route('/leaderboard', methods=['POST'])

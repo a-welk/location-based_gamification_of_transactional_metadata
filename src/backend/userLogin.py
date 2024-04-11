@@ -204,6 +204,89 @@ def user_leaderboard(zipcode):
     leaderboard = sorted(leaderboard, key= operator.itemgetter('Total'))
     return leaderboard
 
+
+def user_leaderboard_by_score():
+
+    user_uuid = ""
+    budget = 10000
+    leaderboard = []
+    table = dynamodb.Table('Users')
+
+    response = table.query(
+        KeyConditionExpression = Key('UserUUID').eq(user_uuid)
+    )
+    items = response['Items']
+    zipcode = items[0]['Zipcode']
+    userName = items[0]['Person']
+
+    response = table.query(
+        IndexName = 'Zipcode-index',
+        KeyConditionExpression = Key('Zipcode').eq(zipcode)
+    )
+    items = response['Items']
+
+    table = dynamodb.Table('Transaction')
+    for x in range(len(items)):
+        list = table.query(
+             IndexName = 'UserUUID-index',
+             KeyConditionExpression = Key('UserUUID').eq(items[x]['UserUUID'])
+        )
+        transactions = list['Items']
+        total = 0.00
+        for y in range(len(transactions)):
+                try:
+                    amount = transactions[y]['Amount']
+                    amount = amount.replace('$', '')
+                    total += float(amount)
+                except KeyError as ke:
+                    total += 0;
+        if (items[x]['UserUUID'] == user_uuid):
+            entry = {
+                'UserUUID': items[x]['UserUUID'],
+                'Name': items[x]['Person'],
+                'Total': round(total, 2)
+            }
+        else:
+            entry = {
+                'UserUUID': items[x]['UserUUID'],
+                'Name': 'Anonymous',
+                'Total': round(total, 2)
+            }
+        leaderboard.append(entry)
+    leaderboard = sorted(leaderboard, key= operator.itemgetter('Total'))
+    return leaderboard
+
+def budget_points(total):
+    budget = 10000
+    points = 0
+    if(total / budget <= .1):
+        points += 10
+    elif(total / budget <= .2 and total / budget > .1):
+        points += 9
+    elif(total / budget <= .3 and total / budget > .2):
+         points += 8
+    elif(total / budget <= .4 and total / budget > .3):
+         points += 7
+    elif(total / budget <= .5 and total / budget > .4):
+         points += 6
+    elif(total / budget <= .6 and total / budget > .5):
+         points += 5
+    elif(total / budget <= .7 and total / budget > .6):
+         points += 4
+    elif(total / budget <= .8 and total / budget > .7):
+         points += 3
+    elif(total / budget <= .9 and total / budget > .8):
+         points += 2
+    elif(total / budget <= 1 and total / budget > .9):
+         points += 1
+    elif(total / budget > 1):
+         points += 0
+
+    return points
+    
+
+
+
 def user_leaderboard_from_month(zipcode, month, year):
 
     leaderboard = []
@@ -364,10 +447,31 @@ def get_user_cards(UserID):
      items = response['Items']
      print(items)
 
+def update_transactions(UserID):
+    table = dynamodb.Table('Transaction')
+    response = table.query(
+         IndexName = 'UserUUID-index',
+         KeyConditionExpression = Key('UserUUID').eq(UserID)
+    )
+    items = response['Items']
+    for item in items:
+        transactionID = items[item]['TransactionUUID']
+        update = table.update_item(
+            Key={'TransactionUUID': transactionID},
+            UpdateExpression = "set #year = :n",
+            ExpressionAttributeNames={
+                "#year": "Year"
+            },
+            ExpressionAttributeValues={
+                ":n": "2024"
+            }
+        )
+
+
 def update_user_password(UserID, password):
-     password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-     table = dynamodb.Table('Users')
-     response = table.update_item(
+    password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    table = dynamodb.Table('Users')
+    response = table.update_item(
           Key={'UserUUID': UserID},
           UpdateExpression = "set #password = :n",
           ExpressionAttributeNames={
@@ -430,8 +534,12 @@ def main():
                 #2, "AlexWelk123", 10000, "Alex Welk", 70, "VA", 0, 10000, 23220)
     #insert_user_onboarding("gunter.welk@gmail.com", "gunterthecat!", 10, 19, 6900, 23220, 50000, "50-30-20")
     #print(user_leaderboard("75758"))
-    print(user_leaderboard_from_month("28312", 10, 2013))
-    #zip with 2 ppl: 28312
+    #print(user_leaderboard("95624"))
+    print(user_leaderboard_from_month("95624", 6, 2016))
+    #zip with 2 ppl: 28312 - names: tommy.brown@gmail.com : TommyBrown123
+
+    #curated zip: 95624
+    #names: Mariana Torres, Neil Moore, Francesca Schmidt, Samuel Perez, Kai King, Halle Parker
 
     
     

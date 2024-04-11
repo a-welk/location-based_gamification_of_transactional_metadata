@@ -36,6 +36,29 @@ transactionLong = []
 transactionZipcode = []
 items = []
 
+@app.route('/signup', methods=['POST'])
+def user_signup():
+    email = request.json.get('email')
+    password = request.json.get('password')
+    table = dynamodb.Table('Users')
+    response = table.query(
+        IndexName='Email-index',
+        KeyConditionExpression='Email = :email',
+        ExpressionAttributeValues={':email': email}
+    )
+    if response['Items']:
+        return jsonify({'error': 'User already exists', 'status': 409}), 409
+    hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    user_id = str(uuid.uuid4())
+    table.put_item(
+        Item={
+            'UserUUID': user_id,
+            'Email': email,
+            'Password': hashed_password,
+        }
+    )
+    return jsonify({'message': 'User created successfully'}), 201
+
 
 @app.route('/login', methods=['POST'])
 def query_user_login():
@@ -53,7 +76,6 @@ def query_user_login():
         UserID = items[0]['UserUUID']
         hashed_password = (items[0]['Password'])
         if bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8')):
-            #session['user_id'] = UserID
             token = jwt.encode({'userID': UserID, 'email': email}, app.config['SECRET_KEY'], algorithm='HS256')
             return jsonify({'token': token}), 200
         else:
@@ -126,8 +148,6 @@ def get_user_transaction():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     return jsonify(transactions)        
-     
-
 
 
 @app.route('/leaderboard', methods=['POST'])

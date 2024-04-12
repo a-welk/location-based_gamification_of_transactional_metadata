@@ -9,5 +9,5 @@ import { CommonModule } from '@angular/common';
   styleUrl: './onboarding2.component.css'
 })
 export class Onboarding2Component {
-
+  
 }

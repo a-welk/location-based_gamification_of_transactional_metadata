@@ -1,3 +1,6 @@
+*{
+    font-family: 'Jost', sans-serif;
+  }
 
 header{
     background-color: #004977;
@@ -18,7 +21,7 @@ h3{
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 7.5vh; /* Set container height to 7.5% viewport height */
+    height: 7.5vh; 
 }
 
 .btn-custom{

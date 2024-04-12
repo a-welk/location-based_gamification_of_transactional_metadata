@@ -30,6 +30,7 @@ export class LoginComponent {
           if (response.token) {
             localStorage.setItem('authToken', response.token);
             console.log('Successfully logged in! Token received:', response.token);
+            this.closeDialog();
             this.Router.navigate(['/dashboard'])
           }
 

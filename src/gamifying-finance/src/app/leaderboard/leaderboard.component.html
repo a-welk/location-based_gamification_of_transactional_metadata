@@ -31,14 +31,14 @@
       <tr>
         <th>Rank #</th>
         <th>Name</th>
-        <th>Total</th>
+        <th>Total Points</th>
       </tr>
     </thead>
     <tbody>
       <tr *ngFor="let person of leaderboardData; let i = index">
         <td>{{ i + 1 }}</td>
         <td>{{ person.Name }}</td>
-        <td>{{ person.Total }} USD</td>
+        <td>{{ person.Points }}</td>
       </tr>
     </tbody>
   </table>

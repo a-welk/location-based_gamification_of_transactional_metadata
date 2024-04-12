@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { Series, AccumulationChart, PieSeries } from '@syncfusion/ej2-charts';
 import { Router } from '@angular/router';
+import { isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-onboarding1',
@@ -12,11 +13,17 @@ export class Onboarding1Component implements OnInit {
   chart1: AccumulationChart | undefined
   chart2: AccumulationChart | undefined
   chart3: AccumulationChart | undefined
-  constructor(private router: Router){
-  }
-  
+
+  constructor(private router: Router, @Inject(PLATFORM_ID) private platformId: object) {}
+
 
   ngOnInit() {
+    if (isPlatformBrowser(this.platformId)) {
+      this.initializeCharts();
+    }
+  }
+
+  initializeCharts() {
     let chart1 : AccumulationChart = new AccumulationChart({
       series: [
           {

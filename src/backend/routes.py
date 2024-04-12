@@ -6,7 +6,7 @@ import operator
 from decimal import *
 from boto3.dynamodb.conditions import Key, Attr
 import os
-from flask import Flask, jsonify, request, redirect, url_for
+from flask import Flask, jsonify, make_response, request, redirect, url_for
 from flask_cors import CORS
 from decouple import config
 from datetime import datetime
@@ -65,23 +65,45 @@ def query_user_login():
     password = request.json.get('password')
     table = dynamodb.Table('Users')
     response = table.query(
-        IndexName = 'Email-index',
-        KeyConditionExpression = Key('Email').eq(email)
+        IndexName='Email-index',
+        KeyConditionExpression=Key('Email').eq(email)
     )
     items = response['Items']
     if not items:
         return jsonify({'error': 'User not found', 'status': 404}), 404
+
     try:
         UserID = items[0]['UserUUID']
-        hashed_password = (items[0]['Password'])
+        hashed_password = items[0]['Password']
         if bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8')):
             token = jwt.encode({'userID': UserID, 'email': email}, app.config['SECRET_KEY'], algorithm='HS256')
-            return jsonify({'token': token}), 200
+            user, missing_fields = get_user_profile_direct(UserID)  # Direct function to get user profile
+
+            needOnboarding = any(missing_fields.values())
+            response_data = {
+                'token': token,
+                'needOnboarding': needOnboarding
+            }
+            response = jsonify(response_data)
+            response.set_cookie('user_id', UserID, httponly=True, secure=True)  # Set cookie securely
+            return response, 200
         else:
             return jsonify({'error': 'Invalid credentials', 'status': 401}), 401
     except IndexError as IE:
-          print("Invalid user login credentials")
-          return False
+        print("Invalid user login credentials")
+        return jsonify({'error': 'Error processing request', 'status': 500}), 500
+
+def get_user_profile_direct(user_id):
+    table = dynamodb.Table('Users')
+    response = table.get_item(Key={'UserUUID': user_id})
+    user = response.get('Item', {})
+
+    required_fields = ['Person', 'Current Age', 'Budget', 'Budget Choice', 'Retirement Age', 'Yearly Income - Person', 'Zipcode']
+    missing_fields = {field: user.get(field) is None for field in required_fields}
+    return user, missing_fields
+
+
+
 
 @app.route('/getTransactions', methods=['GET'])
 def get_user_transaction():

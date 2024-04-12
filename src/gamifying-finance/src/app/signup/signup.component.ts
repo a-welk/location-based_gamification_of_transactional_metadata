@@ -51,7 +51,7 @@ export class SignupComponent {
           next: response => {
             console.log('Success!', response)
             this.closeDialog();
-            this.Router.navigate(['/dashboard'])
+            this.Router.navigate(['/home'])
           },
           error: error => console.error('Error!', error)
         });

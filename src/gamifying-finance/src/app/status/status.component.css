@@ -1,0 +1,54 @@
+.container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start; 
+}
+
+.left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 90%
+}
+
+.header {
+  font-family: 'Jost', sans-serif;
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.text {
+  font-size: 18px;
+  padding-top: 10px;
+}
+
+.right {
+  position: relative;
+  border: 2px solid black;
+
+  height: 100px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+
+.underStatus, .overStatus {
+  position: absolute;
+  top: 10%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 90px;
+  overflow: visible;
+}
+
+.underStatus {
+  color: #32a852;
+}
+
+.overStatus {
+  color: #e04e3a;
+}
+
+
+

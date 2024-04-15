@@ -1,0 +1,17 @@
+<div class="container">
+  <div class="left">
+    <div>
+      <h2 class="header">Status</h2>
+    </div>
+    <div>
+      <h2 class="text" *ngIf="checkBudget()">Under Budget </h2>
+      <!-- <h2 class="text" *ngIf="checkBudget()">Over Budget </h2> -->
+    </div>
+
+  </div>
+  <div class="right">
+    <!-- <ng-icon name="featherThumbsUp" class="underStatus" *ngIf="checkBudget()"></ng-icon> -->
+    <ng-icon name="featherThumbsDown" class="overStatus" *ngIf="checkBudget()"></ng-icon>
+  </div>
+
+</div>

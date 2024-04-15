@@ -34,3 +34,4 @@ export class AppComponent {
     this.isBrowser.next(isPlatformBrowser(this.platformId));
   }
 }
+

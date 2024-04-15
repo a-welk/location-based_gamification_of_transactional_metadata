@@ -12,6 +12,7 @@ import { SignupComponent } from './signup/signup.component';
 import { TransactionsComponent } from './transactions/transactions.component';
 import { Onboarding1Component } from './onboarding1/onboarding1.component';
 import { Onboarding2Component } from './onboarding2/onboarding2.component';
+import { MapComponent } from './map/map.component';
 
 
 
@@ -25,6 +26,7 @@ export const routes: Routes = [
   {path: 'transactions', component: TransactionsComponent},
   {path: 'onboarding', component: Onboarding1Component },
   {path: 'onboarding2', component: Onboarding2Component },
+  {path: 'map', component: MapComponent },
   {path: '**', component: HomeComponent, pathMatch: 'full'},
 ];
 

@@ -330,6 +330,48 @@ def budget_points(total, budget):
          points += 0
 
     return points
+
+
+def get_monthly_transactions():
+    token = request.json.get('token')
+    auth_header = request.headers.get('Authorization')
+    if auth_header:
+        token = auth_header.split(" ")[1]
+    print(token)
+    user_uuid = ""
+    total = 0
+    if token:
+        try:
+            decoded_token = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+            user_uuid = decoded_token['userID']
+            # Continue with the rest of the code using the userID
+        except jwt.InvalidTokenError:
+            return jsonify({'error': 'Invalid token', 'status': 401}), 401
+    else:
+        zipcode = request.json.get('zipcode')
+        return jsonify({'error': 'Token not provided', 'status': 401}), 401
+
+
+    year = datetime.today().year
+    month = datetime.today().month
+    total = 0.00
+    table = dynamodb.Table('Transaction')
+    response = table.query(
+        IndexName = 'UserUUID-index',
+        KeyConditionExpression = Key('UserUUID').eq(user_uuid)
+    )
+    items = response['Items']
+    for item in range(len(items)):
+        if(items[item]['Year'] == str(year) and items[item]['Month'] == str(month)):
+                try:
+                    amount = items[item]['Amount']
+                    amount = amount.replace('$', '')
+                    total += float(amount)
+                except KeyError as ke:
+                    total += 0;
+        else:
+             total += 0
+    return jsonify(total), 200
     
 #inserts new users into Users table
 def insert_user(address, apartment, birthMonth, birthYear, city, age, email, FICOscore, gender, lat, long, numCards, password, perCapitaIncome, name, retirementAge, state, debt, annualIncome, zipcode):

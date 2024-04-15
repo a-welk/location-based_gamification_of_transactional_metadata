@@ -511,6 +511,32 @@ def update_user_budget_option(UserID, budget_choice):
      )
 
 
+def get_monthly_transactions():
+
+    user_uuid = '5651db90-247a-4fee-9901-06e2e28826ac'
+
+    #year = datetime.today().year
+    total = 0.00
+    year = 2014
+    month = 9
+    table = dynamodb.Table('Transaction')
+    response = table.query(
+        IndexName = 'UserUUID-index',
+        KeyConditionExpression = Key('UserUUID').eq(user_uuid)
+    )
+    items = response['Items']
+    for item in range(len(items)):
+        if(items[item]['Year'] == str(year) and items[item]['Month'] == str(month)):
+                try:
+                    amount = items[item]['Amount']
+                    amount = amount.replace('$', '')
+                    total += float(amount)
+                except KeyError as ke:
+                    total += 0;
+        else:
+             total += 0
+    print(total)
+
 """
 STILL NEED FUNCTIONS FOR:
     update functions for each attribute in user?
@@ -527,7 +553,8 @@ def main():
     #get_user_cards(str(UserID))
     #update_user_password("7d49c831-ff33-49bd-9afd-2d061c61ea25", "guntersnewpassword!")
     #print(update_user_income("7d49c831-ff33-49bd-9afd-2d061c61ea25", "69000"))
-    #get_user_transaction(UserID)
+    #get_user_transaction("329a3407-9e78-4a09-b62f-e8cd9b71c9a0")
+    get_monthly_transactions()
     #test_transactions(UserID)
     #insert_transaction(420.69, 0, "3:32", 22, 11, 2021, "No", 5541, "Richmond", "VA", '2e62a0d3-ac63-4077-8784-7dda1c678927', "Chip Transaction", 'b84d7a7e-e05e-4505-870d-d6d229f9d6b0', 23220)
     #insert_user("1411 Grove Ave", "11", "August", "2001", "Richmond", 22, "welka@vcu.edu", 750, "male", "37.54873869465798", "37.54873869465798, -77.45798251781274", 
@@ -535,7 +562,7 @@ def main():
     #insert_user_onboarding("gunter.welk@gmail.com", "gunterthecat!", 10, 19, 6900, 23220, 50000, "50-30-20")
     #print(user_leaderboard("75758"))
     #print(user_leaderboard("95624"))
-    print(user_leaderboard_from_month("95624", 6, 2016))
+    #print(user_leaderboard_from_month("95624", 6, 2016))
     #zip with 2 ppl: 28312 - names: tommy.brown@gmail.com : TommyBrown123
 
     #curated zip: 95624

@@ -380,7 +380,8 @@ def get_monthly_transactions():
     table = dynamodb.Table('Transaction')
     response = table.query(
         IndexName = 'UserUUID-index',
-        KeyConditionExpression = Key('UserUUID').eq(user_uuid)
+        KeyConditionExpression = Key('UserUUID').eq(user_uuid),
+        FilterExpression = Attr('Year').eq(str(year))
     )
     items = response['Items']
     for item in range(len(items)):

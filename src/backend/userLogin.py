@@ -3,6 +3,7 @@ import uuid
 import bcrypt
 import os
 import json
+
 import operator
 #from dotenv import load_dotenv
 from decimal import *
@@ -454,7 +455,7 @@ def update_transactions(UserID):
          KeyConditionExpression = Key('UserUUID').eq(UserID)
     )
     items = response['Items']
-    for item in items:
+    for item in range(len(items)):
         transactionID = items[item]['TransactionUUID']
         update = table.update_item(
             Key={'TransactionUUID': transactionID},

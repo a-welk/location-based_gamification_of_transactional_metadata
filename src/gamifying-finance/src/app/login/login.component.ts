@@ -31,9 +31,12 @@ export class LoginComponent {
             localStorage.setItem('authToken', response.token);
             console.log('Successfully logged in! Token received:', response.token);
             this.closeDialog();
-            this.Router.navigate(['/dashboard'])
+            if (response.needOnboarding) {
+              this.Router.navigate(['/onboarding']);
+            } else {
+              this.Router.navigate(['/dashboard']);
+            }
           }
-
         },
         error: error => console.error('Error!', error)
       });

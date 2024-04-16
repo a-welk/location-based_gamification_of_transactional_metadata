@@ -539,6 +539,141 @@ def get_monthly_transactions():
              total += 0
     print(total)
 
+
+def get_monthly_history():
+    user_uuid = ""
+    budget = 0
+    total = 0
+    
+    user_uuid = "af1800cd-3602-465e-914a-29b803328837"
+
+
+    year = datetime.today().year
+    month = datetime.today().month
+    janTotal = 0.00
+    febTotal = 0.00
+    marTotal = 0.00
+    aprTotal = 0.00
+    mayTotal = 0.00
+    juneTotal = 0.00
+    julyTotal = 0.00
+    augTotal = 0.00
+    septTotal = 0.00
+    octTotal = 0.00
+    novTotal = 0.00
+    decTotal = 0.00
+
+
+    table = dynamodb.Table('Transaction')
+    response = table.query(
+        IndexName = 'UserUUID-index',
+        KeyConditionExpression = Key('UserUUID').eq(user_uuid),
+        FilterExpression = Attr('Year').eq(str(year))
+    )
+    items = response['Items']
+    for item in range(len(items)):
+        if(items[item]['Year'] == str(year) and items[item]['Month'] == '1'):
+                try:
+                    amount = items[item]['Amount']
+                    amount = amount.replace('$', '')
+                    janTotal += float(amount)
+                except KeyError as ke:
+                    janTotal += 0;
+        elif(items[item]['Year'] == str(year) and items[item]['Month'] == '2'):
+                try:
+                    amount = items[item]['Amount']
+                    amount = amount.replace('$', '')
+                    febTotal += float(amount)
+                except KeyError as ke:
+                    febTotal += 0;
+        elif(items[item]['Year'] == str(year) and items[item]['Month'] == '3'):
+                try:
+                    amount = items[item]['Amount']
+                    amount = amount.replace('$', '')
+                    marTotal += float(amount)
+                except KeyError as ke:
+                    marTotal += 0;
+        elif(items[item]['Year'] == str(year) and items[item]['Month'] == '4'):
+                try:
+                    amount = items[item]['Amount']
+                    amount = amount.replace('$', '')
+                    aprTotal += float(amount)
+                except KeyError as ke:
+                    aprTotal += 0;
+        elif(items[item]['Year'] == str(year) and items[item]['Month'] == '5'):
+                try:
+                    amount = items[item]['Amount']
+                    amount = amount.replace('$', '')
+                    mayTotal += float(amount)
+                except KeyError as ke:
+                    mayTotal += 0;
+        elif(items[item]['Year'] == str(year) and items[item]['Month'] == '6'):
+                try:
+                    amount = items[item]['Amount']
+                    amount = amount.replace('$', '')
+                    juneTotal += float(amount)
+                except KeyError as ke:
+                    juneTotal += 0;
+        elif(items[item]['Year'] == str(year) and items[item]['Month'] == '7'):
+                try:
+                    amount = items[item]['Amount']
+                    amount = amount.replace('$', '')
+                    julyTotal += float(amount)
+                except KeyError as ke:
+                    julyTotal += 0;
+        elif(items[item]['Year'] == str(year) and items[item]['Month'] == '8'):
+                try:
+                    amount = items[item]['Amount']
+                    amount = amount.replace('$', '')
+                    augTotal += float(amount)
+                except KeyError as ke:
+                    augTotal += 0;
+        elif(items[item]['Year'] == str(year) and items[item]['Month'] == '9'):
+                try:
+                    amount = items[item]['Amount']
+                    amount = amount.replace('$', '')
+                    septTotal += float(amount)
+                except KeyError as ke:
+                    septTotal += 0;
+        elif(items[item]['Year'] == str(year) and int(items[item]['Month']) == '10'):
+                try:
+                    amount = items[item]['Amount']
+                    amount = amount.replace('$', '')
+                    octTotal += float(amount)
+                except KeyError as ke:
+                    octTotal += 0;
+        elif(items[item]['Year'] == str(year) and items[item]['Month'] == '11'):
+                try:
+                    amount = items[item]['Amount']
+                    amount = amount.replace('$', '')
+                    novTotal += float(amount)
+                except KeyError as ke:
+                    novTotal += 0;
+        elif(items[item]['Year'] == str(year) and items[item]['Month'] == '12'):
+                try:
+                    amount = items[item]['Amount']
+                    amount = amount.replace('$', '')
+                    decTotal += float(amount)
+                except KeyError as ke:
+                    decTotal += 0;
+    total_and_budget = {
+        'Jan': round(janTotal, 2),
+        'Feb': round(febTotal, 2),
+        'Mar': round(marTotal, 2),
+        'Apr': round(aprTotal, 2),
+        'May': round(mayTotal, 2),
+        'Jun': round(juneTotal, 2),
+        'Jul': round(julyTotal, 2),
+        'Aug': round(augTotal, 2),
+        'Sep': round(septTotal, 2),
+        'Oct': round(octTotal, 2),
+        'Nov': round(novTotal, 2),
+        'Dec': round(decTotal, 2),
+        'Budget': budget
+    }
+    return total_and_budget
+
+
 """
 STILL NEED FUNCTIONS FOR:
     update functions for each attribute in user?
@@ -550,13 +685,15 @@ STILL NEED TO:
     """
 
 def main():
+    #update_transactions("af1800cd-3602-465e-914a-29b803328837")
+    print(get_monthly_history())
     #UserID = query_user_login("gunter.welk@gmail.com", "guntersnewpassword!") #just a sample login
     #UserID = query_user_login("amira.bailey@gmail.com", "AmiraBailey123")
     #get_user_cards(str(UserID))
     #update_user_password("7d49c831-ff33-49bd-9afd-2d061c61ea25", "guntersnewpassword!")
     #print(update_user_income("7d49c831-ff33-49bd-9afd-2d061c61ea25", "69000"))
     #get_user_transaction("329a3407-9e78-4a09-b62f-e8cd9b71c9a0")
-    get_monthly_transactions()
+    #get_monthly_transactions()
     #test_transactions(UserID)
     #insert_transaction(420.69, 0, "3:32", 22, 11, 2021, "No", 5541, "Richmond", "VA", '2e62a0d3-ac63-4077-8784-7dda1c678927', "Chip Transaction", 'b84d7a7e-e05e-4505-870d-d6d229f9d6b0', 23220)
     #insert_user("1411 Grove Ave", "11", "August", "2001", "Richmond", 22, "welka@vcu.edu", 750, "male", "37.54873869465798", "37.54873869465798, -77.45798251781274", 
@@ -566,11 +703,16 @@ def main():
     #print(user_leaderboard("95624"))
     #print(user_leaderboard_from_month("95624", 6, 2016))
     #zip with 2 ppl: 28312 - names: tommy.brown@gmail.com : TommyBrown123
-
-    #curated zip: 95624
-    #names: Mariana Torres, Neil Moore, Francesca Schmidt, Samuel Perez, Kai King, Halle Parker
-
-    
+'''
+    curated zip: 95624
+    names:
+    Mariana Torres (0c06d341-5913-487b-a38f-7bb69c1fb76d)
+    Neil Moore (5651db90-247a-4fee-9901-06e2e28826ac)
+    Francesca Schmidt (deb0bc86-c3ff-4e8a-a2b7-54086c031109)
+    Samuel Perez (14e5e03f-d2a4-4b8e-9278-6c0031a1fcdf)
+    Kai King (8c1ca7d9-dce2-46a2-a0fc-3d592b07e3b5)
+    Halle Parker (af1800cd-3602-465e-914a-29b803328837)
+    '''
     
 if __name__=="__main__":
     main()

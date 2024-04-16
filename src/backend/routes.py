@@ -334,25 +334,25 @@ def budget_points(total, budget):
     points = 0
     ratio = total / budget
     if(ratio <= .1):
-        points += 10
+        points += 100
     elif(ratio <= .2 and ratio > .1):
-        points += 9
+        points += 90
     elif(ratio <= .3 and ratio > .2):
-         points += 8
+         points += 80
     elif(ratio <= .4 and ratio > .3):
-         points += 7
+         points += 70
     elif(ratio <= .5 and ratio > .4):
-         points += 6
+         points += 60
     elif(ratio <= .6 and ratio > .5):
-         points += 5
+         points += 50
     elif(ratio <= .7 and ratio > .6):
-         points += 4
+         points += 40
     elif(ratio <= .8 and ratio > .7):
-         points += 3
+         points += 30
     elif(ratio <= .9 and ratio > .8):
-         points += 2
+         points += 20
     elif(ratio <= 1 and ratio > .9):
-         points += 1
+         points += 10
     elif(ratio > 1):
          points += 0
 
@@ -407,6 +407,156 @@ def get_monthly_transactions():
         'Budget': budget
     }
     return jsonify(total_and_budget), 200
+
+
+def get_monthly_history():
+    token = request.json.get('token')
+    auth_header = request.headers.get('Authorization')
+    if auth_header:
+        token = auth_header.split(" ")[1]
+    print(token)
+    user_uuid = ""
+    budget = 0
+    total = 0
+    
+    if token:
+        try:
+            decoded_token = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+            user_uuid = decoded_token['userID']
+            budget = decoded_token['budget']
+            # Continue with the rest of the code using the userID
+        except jwt.InvalidTokenError:
+            return jsonify({'error': 'Invalid token', 'status': 401}), 401
+    else:
+        zipcode = request.json.get('zipcode')
+        return jsonify({'error': 'Token not provided', 'status': 401}), 401
+
+
+    year = datetime.today().year
+    month = datetime.today().month
+    janTotal = 0.00
+    febTotal = 0.00
+    marTotal = 0.00
+    aprTotal = 0.00
+    mayTotal = 0.00
+    juneTotal = 0.00
+    julyTotal = 0.00
+    augTotal = 0.00
+    septTotal = 0.00
+    octTotal = 0.00
+    novTotal = 0.00
+    decTotal = 0.00
+
+
+    table = dynamodb.Table('Transaction')
+    response = table.query(
+        IndexName = 'UserUUID-index',
+        KeyConditionExpression = Key('UserUUID').eq(user_uuid),
+        FilterExpression = Attr('Year').eq(str(year))
+    )
+    items = response['Items']
+    for item in range(len(items)):
+        if(items[item]['Year'] == str(year) and items[item]['Month'] == '1'):
+                try:
+                    amount = items[item]['Amount']
+                    amount = amount.replace('$', '')
+                    janTotal += float(amount)
+                except KeyError as ke:
+                    janTotal += 0;
+        elif(items[item]['Year'] == str(year) and items[item]['Month'] == '2'):
+                try:
+                    amount = items[item]['Amount']
+                    amount = amount.replace('$', '')
+                    febTotal += float(amount)
+                except KeyError as ke:
+                    febTotal += 0;
+        elif(items[item]['Year'] == str(year) and items[item]['Month'] == '3'):
+                try:
+                    amount = items[item]['Amount']
+                    amount = amount.replace('$', '')
+                    marTotal += float(amount)
+                except KeyError as ke:
+                    marTotal += 0;
+        elif(items[item]['Year'] == str(year) and items[item]['Month'] == '4'):
+                try:
+                    amount = items[item]['Amount']
+                    amount = amount.replace('$', '')
+                    aprTotal += float(amount)
+                except KeyError as ke:
+                    aprTotal += 0;
+        elif(items[item]['Year'] == str(year) and items[item]['Month'] == '5'):
+                try:
+                    amount = items[item]['Amount']
+                    amount = amount.replace('$', '')
+                    mayTotal += float(amount)
+                except KeyError as ke:
+                    mayTotal += 0;
+        elif(items[item]['Year'] == str(year) and items[item]['Month'] == '6'):
+                try:
+                    amount = items[item]['Amount']
+                    amount = amount.replace('$', '')
+                    juneTotal += float(amount)
+                except KeyError as ke:
+                    juneTotal += 0;
+        elif(items[item]['Year'] == str(year) and items[item]['Month'] == '7'):
+                try:
+                    amount = items[item]['Amount']
+                    amount = amount.replace('$', '')
+                    julyTotal += float(amount)
+                except KeyError as ke:
+                    julyTotal += 0;
+        elif(items[item]['Year'] == str(year) and items[item]['Month'] == '8'):
+                try:
+                    amount = items[item]['Amount']
+                    amount = amount.replace('$', '')
+                    augTotal += float(amount)
+                except KeyError as ke:
+                    augTotal += 0;
+        elif(items[item]['Year'] == str(year) and items[item]['Month'] == '9'):
+                try:
+                    amount = items[item]['Amount']
+                    amount = amount.replace('$', '')
+                    septTotal += float(amount)
+                except KeyError as ke:
+                    septTotal += 0;
+        elif(items[item]['Year'] == str(year) and int(items[item]['Month']) == '10'):
+                try:
+                    amount = items[item]['Amount']
+                    amount = amount.replace('$', '')
+                    octTotal += float(amount)
+                except KeyError as ke:
+                    octTotal += 0;
+        elif(items[item]['Year'] == str(year) and items[item]['Month'] == '11'):
+                try:
+                    amount = items[item]['Amount']
+                    amount = amount.replace('$', '')
+                    novTotal += float(amount)
+                except KeyError as ke:
+                    novTotal += 0;
+        elif(items[item]['Year'] == str(year) and items[item]['Month'] == '12'):
+                try:
+                    amount = items[item]['Amount']
+                    amount = amount.replace('$', '')
+                    decTotal += float(amount)
+                except KeyError as ke:
+                    decTotal += 0;
+    total_and_budget = {
+        'Jan': round(janTotal, 2),
+        'Feb': round(febTotal, 2),
+        'Mar': round(marTotal, 2),
+        'Apr': round(aprTotal, 2),
+        'May': round(mayTotal, 2),
+        'Jun': round(juneTotal, 2),
+        'Jul': round(julyTotal, 2),
+        'Aug': round(augTotal, 2),
+        'Sep': round(septTotal, 2),
+        'Oct': round(octTotal, 2),
+        'Nov': round(novTotal, 2),
+        'Dec': round(decTotal, 2),
+        'Budget': budget
+    }
+    return jsonify(total_and_budget), 200
+
     
 #inserts new users into Users table
 def insert_user(address, apartment, birthMonth, birthYear, city, age, email, FICOscore, gender, lat, long, numCards, password, perCapitaIncome, name, retirementAge, state, debt, annualIncome, zipcode):

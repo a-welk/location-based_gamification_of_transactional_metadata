@@ -1,5 +1,5 @@
-import { Component, Inject, NgModule, PLATFORM_ID } from '@angular/core';
-import {NgIf, isPlatformBrowser} from '@angular/common';
+import { Component, Inject, NgModule, PLATFORM_ID, Renderer2 } from '@angular/core';
+import {DOCUMENT, NgIf, isPlatformBrowser} from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 import { CommonModule } from '@angular/common';
@@ -30,8 +30,19 @@ export class AppComponent {
 
   isBrowser = new BehaviorSubject<boolean>(false);
 
-  constructor(@Inject(PLATFORM_ID) private platformId: any) {
+  constructor(@Inject(PLATFORM_ID) private platformId: any, private renderer2: Renderer2,
+  @Inject(DOCUMENT) private document: Document) {
     this.isBrowser.next(isPlatformBrowser(this.platformId));
+  }
+
+
+  ngOnInit() {
+    const s = this.renderer2.createElement('script');
+    s.type = 'text/javascript';
+    s.src = `https://maps.googleapis.com/maps/api/js?key=INSERT_KEY_HERE`;
+    s.defer = true;
+    s.async = true;
+    this.renderer2.appendChild(this.document.head, s);
   }
 }
 

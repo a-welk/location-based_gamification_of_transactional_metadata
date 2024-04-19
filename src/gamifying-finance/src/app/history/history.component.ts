@@ -11,7 +11,7 @@ import { Chart, LineSeries } from '@syncfusion/ej2-angular-charts';
   styleUrl: './history.component.css'
 })
 export class HistoryComponent {
-  chart: LineSeries | undefined
+  chart: Chart | undefined
   constructor(private router: Router, @Inject(PLATFORM_ID) private platformId: object) {}
 
 
@@ -29,9 +29,10 @@ export class HistoryComponent {
           { x: 'Sep', y: 2341 }, { x: 'Oct', y: 2312 }, { x: 'Nov', y: 1945 }, { x: 'Dec', y: 2341 },
           { x: 'Jan', y: 2700 }, { x: 'Feb', y: 2503}, { x: 'Mar', y: 2459}, { x: 'Apr', y: 2410}
         ],
-        xName: 'x', yName: 'y',
-        //Series type as line
-        type: 'Line'
+        xName: 'y', yName: 'x',
+        fill: 'green',
+        opacity: '0',
+        type: 'line'
         
     }],
   }, '#element');

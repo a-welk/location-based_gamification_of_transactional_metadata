@@ -3,7 +3,7 @@ import uuid
 import bcrypt
 import os
 import json
-
+import random
 import operator
 #from dotenv import load_dotenv
 from decimal import *
@@ -674,6 +674,60 @@ def get_monthly_history():
     return total_and_budget
 
 
+def generate_new_transactions(userUUID):
+    transactionUUID = str(uuid.uuid4())
+    amount = round(random.uniform(1, 400), 2)
+    amount = "$" + str(amount)
+    card = random.randint(1, 7)
+    day = datetime.now().day
+    month = datetime.now().month
+    year = datetime.now().year
+    hour = random.randint(1, 12)
+    minute = random.randint(1, 59)
+    time = str(hour) + ":" + str(minute)
+    isFraud = 'No'
+    MCC = random.randint(1, 9999)
+    useChip = ""
+    value = random.randint(1, 3)
+    if(value == 1):
+           useChip = "Swipe Transaction"
+    elif(value == 2):
+           useChip = "Chip Transaction"
+    else:
+           useChip == "Online Transaction"
+
+    
+    table = dynamodb.Table('Merchants')
+    response = table.scan(
+         Limit = 100
+    )
+    items = response['Items']
+    randomNum = random.randint(1, len(items))
+    MerchantUUID = items[randomNum]['MerchantUUID']
+
+    print(transactionUUID)
+
+    table = dynamodb.Table('Transaction')
+    response = table.put_item(
+    Item={
+        'TransactionUUID': transactionUUID,
+        'Amount': amount,
+        'Card': card,
+        'Day': day,
+        'Is Fraud?': isFraud,
+        'MCC': MCC,
+        'MerchantUUID': MerchantUUID,
+        'Month': month,
+        'Time': time,
+        'Use Chip': useChip,
+        'UserUUID': userUUID,
+        'Year': year
+        }
+    )
+
+
+
+
 """
 STILL NEED FUNCTIONS FOR:
     update functions for each attribute in user?
@@ -686,7 +740,8 @@ STILL NEED TO:
 
 def main():
     #update_transactions("af1800cd-3602-465e-914a-29b803328837")
-    print(get_monthly_history())
+    #print(get_monthly_history())
+    generate_new_transactions('af1800cd-3602-465e-914a-29b803328837')
     #UserID = query_user_login("gunter.welk@gmail.com", "guntersnewpassword!") #just a sample login
     #UserID = query_user_login("amira.bailey@gmail.com", "AmiraBailey123")
     #get_user_cards(str(UserID))

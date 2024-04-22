@@ -82,7 +82,7 @@ def query_user_login():
             budget = float(annualIncome) / 12
         if bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8')):
             token = jwt.encode({'userID': UserID, 'email': email, 'name': name, 'budget': budget}, app.config['SECRET_KEY'], algorithm='HS256')
-            user, missing_fields = get_user_profile_direct(UserID)  # Direct function to get user profile
+            user, missing_fields = get_user_profile_direct(UserID)
 
             needOnboarding = any(missing_fields.values())
             response_data = {
@@ -90,7 +90,7 @@ def query_user_login():
                 'needOnboarding': needOnboarding
             }
             response = jsonify(response_data)
-            response.set_cookie('user_id', UserID, httponly=True, secure=True)  # Set cookie securely
+            response.set_cookie('user_id', UserID, httponly=True, secure=True) 
             return response, 200
         else:
             return jsonify({'error': 'Invalid credentials', 'status': 401}), 401
@@ -358,7 +358,7 @@ def budget_points(total, budget):
 
     return points
 
-
+@app.route('/get_monthly_transactions', methods=['GET'])
 def get_monthly_transactions():
     token = request.json.get('token')
     auth_header = request.headers.get('Authorization')

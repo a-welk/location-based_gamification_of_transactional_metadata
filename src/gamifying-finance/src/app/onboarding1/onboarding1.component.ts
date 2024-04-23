@@ -1,20 +1,23 @@
 import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { Series, AccumulationChart, PieSeries } from '@syncfusion/ej2-charts';
 import { Router } from '@angular/router';
-import { isPlatformBrowser } from '@angular/common';
+import { isPlatformBrowser, CommonModule } from '@angular/common';
+import { HttpService } from '../services/http.service';
 
 @Component({
   selector: 'app-onboarding1',
   templateUrl: './onboarding1.component.html',
   styleUrls: ['./onboarding1.component.css'],
+  imports: [CommonModule],
   standalone: true
 })
 export class Onboarding1Component implements OnInit {
   chart1: AccumulationChart | undefined
   chart2: AccumulationChart | undefined
   chart3: AccumulationChart | undefined
+  selectedOption: string | null = null;
 
-  constructor(private router: Router, @Inject(PLATFORM_ID) private platformId: object) {}
+  constructor(private router: Router, @Inject(PLATFORM_ID) private platformId: object, private httpService: HttpService) {}
 
 
   ngOnInit() {
@@ -88,5 +91,15 @@ export class Onboarding1Component implements OnInit {
 
   nextPage(){
     this.router.navigate(["/onboarding2"])
+  }
+
+  selection(option: string): void {
+    this.selectedOption = option;
+    this.httpService.update_budget_option(option).subscribe({
+      next: (response) => {
+        console.log('Budget option updated successfully:', response);
+      },
+      error: (error) => console.error('Failed to update budget option:', error)
+    });
   }
 }

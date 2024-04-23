@@ -31,8 +31,8 @@ export class HistoryComponent {
         ],
         xName: 'y', yName: 'x',
         fill: 'green',
-        opacity: '0',
-        type: 'line'
+        // opacity: '0',
+        // type: 'line'
         
     }],
   }, '#element');

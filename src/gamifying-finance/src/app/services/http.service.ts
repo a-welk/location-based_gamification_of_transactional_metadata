@@ -34,4 +34,11 @@ export class HttpService {
     const url = this.apiUrl +'/get_monthly_transactions';
     return this.http.get(url);
   }
+
+  update_budget_option(budgetChoice: any) {
+    const url = this.apiUrl +'/update_budget_option';
+    return this.http.post(url, { budgetChoice })
+  }
+
+
 }

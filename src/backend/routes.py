@@ -713,19 +713,33 @@ def update_user_income(UserID, income):
      status_code = {"status_code": 200}
      return (json.dumps(status_code))
 
-
-def update_user_budget_option(UserID, budget_choice):
-     table = dynamodb.Table('Users')
-     response = table.update_item(
-          Key={'UserUUID': UserID},
-          UpdateExpression = "set #budget_choice = :n",
-          ExpressionAttributeNames={
-               "#budget_choice": "Budget Choice"
-          },
-          ExpressionAttributeValues={
-               ":n": budget_choice
-          }
-     )
+@app.route('/update_budget_option', methods=['POST'])
+def update_user_budget_option():
+    token = request.json.get('token')
+    budget_choice = request.json.get('budgetChoice')
+    auth_header = request.headers.get('Authorization')
+    if auth_header:
+        token = auth_header.split(" ")[1]
+    user_uuid = ""
+    if token:
+        try:
+            decoded_token = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+            user_uuid = decoded_token['userID']
+        except jwt.InvalidTokenError:
+            return jsonify({'error': 'Invalid token', 'status': 401}), 401
+    else:
+        return jsonify({'error': 'Token not provided', 'status': 401}), 401
+    table = dynamodb.Table('Users')
+    response = table.update_item(
+        Key={'UserUUID': user_uuid},
+        UpdateExpression = "set #budget_choice = :n",
+        ExpressionAttributeNames={
+            "#budget_choice": "Budget Choice"
+        },
+        ExpressionAttributeValues={
+            ":n": budget_choice
+        }
+    )
 
                                 
         

@@ -20,7 +20,7 @@ export class StatusComponent {
 
   }
   ngOnInit(): void {
-    this.checkBudget();
+    // this.checkBudget();
   }
 
   checkBudget(): void {

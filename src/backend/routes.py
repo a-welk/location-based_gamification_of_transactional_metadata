@@ -82,15 +82,14 @@ def query_user_login():
             budget = float(annualIncome) / 12
         if bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8')):
             token = jwt.encode({'userID': UserID, 'email': email, 'name': name, 'budget': budget}, app.config['SECRET_KEY'], algorithm='HS256')
-            user, missing_fields = get_user_profile_direct(UserID)
-
+            missing_fields = onboard_check(UserID)
             needOnboarding = any(missing_fields.values())
             response_data = {
                 'token': token,
                 'needOnboarding': needOnboarding
             }
             response = jsonify(response_data)
-            response.set_cookie('user_id', UserID, httponly=True, secure=True) 
+            response.set_cookie('user_id', UserID, httponly=True, secure=True)
             return response, 200
         else:
             return jsonify({'error': 'Invalid credentials', 'status': 401}), 401
@@ -98,14 +97,13 @@ def query_user_login():
         print("Invalid user login credentials")
         return jsonify({'error': 'Error processing request', 'status': 500}), 500
 
-def get_user_profile_direct(user_id):
+def onboard_check(user_id):
     table = dynamodb.Table('Users')
     response = table.get_item(Key={'UserUUID': user_id})
     user = response.get('Item', {})
 
     required_fields = ['Person', 'Current Age', 'Budget', 'Budget Choice', 'Retirement Age', 'Yearly Income - Person', 'Zipcode']
-    missing_fields = {field: user.get(field) is None for field in required_fields}
-    return user, missing_fields
+    return {field: user.get(field) is None for field in required_fields}
 
 
 

@@ -1,3 +1,4 @@
+import random
 import bcrypt
 import boto3
 import uuid
@@ -12,6 +13,8 @@ from decouple import config
 from datetime import datetime
 import jwt
 from functools import wraps
+from geopy.geocoders import Nominatim
+from geopy.exc import GeocoderTimedOut
 
 app = Flask(__name__)
 CORS(app)
@@ -79,18 +82,17 @@ def query_user_login():
         annualIncome = items[0]['Yearly Income - Person']
         budget = float(items[0]['Budget'])
         if(budget == 0):
-            budget = float(annualIncome) / 12
+            budget = float(annualIncome.replace("$", "")) / 12
         if bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8')):
             token = jwt.encode({'userID': UserID, 'email': email, 'name': name, 'budget': budget}, app.config['SECRET_KEY'], algorithm='HS256')
-            user, missing_fields = get_user_profile_direct(UserID)  # Direct function to get user profile
-
+            missing_fields = onboard_check(UserID)
             needOnboarding = any(missing_fields.values())
             response_data = {
                 'token': token,
                 'needOnboarding': needOnboarding
             }
             response = jsonify(response_data)
-            response.set_cookie('user_id', UserID, httponly=True, secure=True)  # Set cookie securely
+            response.set_cookie('user_id', UserID, httponly=True, secure=True)
             return response, 200
         else:
             return jsonify({'error': 'Invalid credentials', 'status': 401}), 401
@@ -98,18 +100,16 @@ def query_user_login():
         print("Invalid user login credentials")
         return jsonify({'error': 'Error processing request', 'status': 500}), 500
 
-def get_user_profile_direct(user_id):
+def onboard_check(user_id):
     table = dynamodb.Table('Users')
     response = table.get_item(Key={'UserUUID': user_id})
     user = response.get('Item', {})
 
     required_fields = ['Person', 'Current Age', 'Budget', 'Budget Choice', 'Retirement Age', 'Yearly Income - Person', 'Zipcode']
-    missing_fields = {field: user.get(field) is None for field in required_fields}
-    return user, missing_fields
+    return {field: user.get(field) is None for field in required_fields}
 
-
-
-
+# Load mcc_codes_data.json
+mcc_data = json.load(open('mcc_codes_data.json'))
 @app.route('/getTransactions', methods=['GET'])
 def get_user_transaction():
     # Initialize a DynamoDB resource
@@ -119,60 +119,52 @@ def get_user_transaction():
                               region_name="us-east-1")
     
     # Specify your Transaction and Merchants table names
-    transactions_table_name = 'Transaction'
-    merchants_table_name = 'Merchants'
+    transactions_table_name = 'Transactions_New'
     token = None
     auth_header = request.headers.get('Authorization')
     if auth_header:
         token = auth_header.split(" ")[1]
-    print(token)
     user_uuid = ""
     if token:
         try:
             decoded_token = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
-            user_uuid = decoded_token['userID']
-            # Continue with the rest of the code using the userID
         except jwt.InvalidTokenError:
             return jsonify({'error': 'Invalid token', 'status': 401}), 401
+        user_uuid = decoded_token.get('userID', None)
+        if not user_uuid:
+            return jsonify({'error': 'Token for invalid user ', 'status': 401}), 401
     else:
         return jsonify({'error': 'Token not provided', 'status': 401}), 401
-    
+
     # Initialize the tables
     transactions_table = dynamodb.Table(transactions_table_name)
-    merchants_table = dynamodb.Table(merchants_table_name)
     
-    
-    try:
-        # Perform the query operation for transactions
-        response = transactions_table.query(
-            IndexName='UserUUID-index',  # Use the exact name of your GSI
-            KeyConditionExpression=boto3.dynamodb.conditions.Key('UserUUID').eq(user_uuid)
-        )
-        
-        transactions = response['Items'][:50]  # Limiting to first 50 transactions for demonstration
-        
-        # Loop through each transaction to fetch merchant's latitude and longitude
-        for transaction in transactions:
-            if 'Zip' not in transaction:
-                transaction['Zip'] = "Not Available"
+    transactions = {}
 
-            merchant_uuid = transaction['MerchantUUID']
-            
-            # Query the Merchants table using MerchantUUID
-            merchant_response = merchants_table.get_item(
-                Key={'MerchantUUID': merchant_uuid}
-            )
-
-            
-            # Check if merchant details are found
-            if 'Item' in merchant_response:
-                merchant_details = merchant_response['Item']
-                # Add latitude and longitude to the transaction dictionary
-                transaction['Latitude'] = merchant_details.get('latitude', 'Not Available')
-                transaction['Longitude'] = merchant_details.get('longitude', 'Not Available')
-                
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    # Perform the query operation for transactions
+    response = transactions_table.query(
+        IndexName='UserUUID-index',
+        KeyConditionExpression=boto3.dynamodb.conditions.Key('UserUUID').eq(user_uuid)
+    )
+    transactions = response['Items'][:50]  # Limiting to first 50 transactions for demonstration
+    for transaction in transactions:
+        mcc = transaction['MCC']
+        mcc_data_entry = mcc_data.get(str(mcc))
+        transaction_time = transaction['Time']
+        # Convert the time to a 12-hour format with AM/PM
+        if transaction_time:
+            hour, minute, seconds = map(int, transaction_time.split(':'))
+            period = 'AM'
+            if hour > 12:
+                hour -= 12
+                period = 'PM'
+            hour = str(hour).zfill(2)  # Pad the hour with a leading zero if necessary
+            minute = str(minute).zfill(2)  # Pad the minute with a leading zero if necessary
+            transaction['Time'] = f'{hour}:{minute} {period}'
+        if mcc_data_entry:
+            transaction['Merchant Data'] = mcc_data_entry
+        print(f"Processing transaction {transactions.index(transaction) + 1}/{len(transactions)}\r", end="")
+    print(transactions)
     return jsonify(transactions)        
 
 
@@ -183,7 +175,6 @@ def user_leaderboard():
     auth_header = request.headers.get('Authorization')
     if auth_header:
         token = auth_header.split(" ")[1]
-    print(token)
     user_uuid = ""
     if token:
         try:
@@ -358,7 +349,7 @@ def budget_points(total, budget):
 
     return points
 
-
+@app.route('/get_monthly_transactions', methods=['GET'])
 def get_monthly_transactions():
     token = request.json.get('token')
     auth_header = request.headers.get('Authorization')
@@ -713,21 +704,50 @@ def update_user_income(UserID, income):
      status_code = {"status_code": 200}
      return (json.dumps(status_code))
 
+@app.route('/update_budget_option', methods=['POST'])
+def update_user_budget_option():
+    token = request.json.get('token')
+    budget_choice = request.json.get('budgetChoice')
+    auth_header = request.headers.get('Authorization')
+    if auth_header:
+        token = auth_header.split(" ")[1]
+    user_uuid = ""
+    if token:
+        try:
+            decoded_token = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+            user_uuid = decoded_token['userID']
+        except jwt.InvalidTokenError:
+            return jsonify({'error': 'Invalid token', 'status': 401}), 401
+    else:
+        return jsonify({'error': 'Token not provided', 'status': 401}), 401
+    table = dynamodb.Table('Users')
+    response = table.update_item(
+        Key={'UserUUID': user_uuid},
+        UpdateExpression = "set #budget_choice = :n",
+        ExpressionAttributeNames={
+            "#budget_choice": "Budget Choice"
+        },
+        ExpressionAttributeValues={
+            ":n": budget_choice
+        }
+    )
 
-def update_user_budget_option(UserID, budget_choice):
-     table = dynamodb.Table('Users')
-     response = table.update_item(
-          Key={'UserUUID': UserID},
-          UpdateExpression = "set #budget_choice = :n",
-          ExpressionAttributeNames={
-               "#budget_choice": "Budget Choice"
-          },
-          ExpressionAttributeValues={
-               ":n": budget_choice
-          }
-     )
-
-                                
+json_data = json.load(open('zip_summary.json'))
+@app.route('/getAverages', methods=['GET'])
+def getAverages():
+    zipcode = request.args.get('zipcode')
+    month = request.args.get('month')
+    year = request.args.get('year')
+    zipcode_data = json_data[str(zipcode)]
+    date = f'{month}/{year}'
+    returnData = {}
+    if zipcode_data.get(date, None):
+        date_data = zipcode_data[date]
+        for key in date_data.keys():
+            returnData[key] = {'User Average': (date_data[key] * random.uniform(0.8, 1.2)), 'Community Average': date_data[key], 'User Target': (date_data[key] * random.uniform(0.8, 1.2)), 'Community Target': date_data[key]}
+    else:
+        returnData = {'error': 'No data for this date', 'status': 404}
+    return returnData                              
         
         
 def main():

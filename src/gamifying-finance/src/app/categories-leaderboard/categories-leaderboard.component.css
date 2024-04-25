@@ -1,0 +1,23 @@
+.container{
+    width: 100%;
+}
+.PageTitle{
+    margin-top: 10px;
+    text-align: center;
+}
+.filters{
+    position: relative;
+    float: right;
+    margin-bottom: 10px;
+}
+.filters label{
+    padding: 5px;
+}
+thead{
+    background: black;
+    font-size: larger;
+
+}
+.expenseCategory{
+    font-weight: bold;
+}

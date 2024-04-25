@@ -38,7 +38,6 @@ def addTransaction():
     highestTransactionID = getTransactionId.getHighestTransactionID()+ 1
     return jsonify(), main.addTransactionToTable(highestTransactionID, user, personName, cardNumber, year, month, day, time, amount, useChip, merchantName, merchantCity, merchantState, merchantLocId, zipcode, mcc, errors, isFraud)
 
-
 @app.route('/getTransactions', methods=['GET'])
 def get_user_transaction():
     # Initialize a DynamoDB resource
@@ -47,49 +46,44 @@ def get_user_transaction():
                               aws_secret_access_key='ULV7X90uwRxEu72rf4xDCoXmZXltARqt7TJ9zRkx',
                               region_name="us-east-1")
     
-    # Specify your Transaction and Merchants table names
-    transactions_table_name = 'Transaction'
-    merchants_table_name = 'Merchants'
-    
-    # Initialize the tables
-    transactions_table = dynamodb.Table(transactions_table_name)
-    merchants_table = dynamodb.Table(merchants_table_name)
-    
-    # Specify the UserUUID you're querying for
-    user_uuid = "b47522dd-2dc9-4ae9-a4cc-76d57afb3602"
-    
+    # Specify your Transaction table name
+    transactions_table_name = 'Transactions'
+
+    # Extract the token
+    token = request.headers.get('Authorization', '').split(' ')[-1]
+    if not token:
+        return jsonify({'error': 'Token not provided', 'status': 401}), 401
+
     try:
+        decoded_token = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+        user_uuid = decoded_token['userID']
+    except jwt.InvalidTokenError:
+        return jsonify({'error': 'Invalid token', 'status': 401}), 401
+
+    # Extract month and year from query parameters
+    month = request.args.get('month')
+    year = request.args.get('year')
+
+    # Initialize the transactions table
+    transactions_table = dynamodb.Table(transactions_table_name)
+
+    try:
+        # Construct the query condition
+        key_condition = Key('UserUUID').eq(user_uuid)
+        if month and year:
+            key_condition = And(key_condition, Key('Month').eq(month), Key('Year').eq(year))
+
         # Perform the query operation for transactions
         response = transactions_table.query(
-            IndexName='UserUUID-index',  # Use the exact name of your GSI
-            KeyConditionExpression=boto3.dynamodb.conditions.Key('UserUUID').eq(user_uuid)
+            IndexName='UserUUID-index',  # Adjusted GSI name
+            KeyConditionExpression=key_condition
         )
-        
+
         transactions = response['Items'][:50]  # Limiting to first 50 transactions for demonstration
-        
-        # Loop through each transaction to fetch merchant's latitude and longitude
-        for transaction in transactions:
-            if 'Zip' not in transaction:
-                transaction['Zip'] = "Not Available"
 
-            merchant_uuid = transaction['MerchantUUID']
-            
-            # Query the Merchants table using MerchantUUID
-            merchant_response = merchants_table.get_item(
-                Key={'MerchantUUID': merchant_uuid}
-            )
-
-            
-            # Check if merchant details are found
-            if 'Item' in merchant_response:
-                merchant_details = merchant_response['Item']
-                # Add latitude and longitude to the transaction dictionary
-                transaction['Latitude'] = merchant_details.get('latitude', 'Not Available')
-                transaction['Longitude'] = merchant_details.get('longitude', 'Not Available')
-                
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    print(transactions[1].keys())
+
     return jsonify(transactions)
 
 

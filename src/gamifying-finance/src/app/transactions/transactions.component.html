@@ -1,57 +1,46 @@
-<style>
-  table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  
-  table th,
-  table td {
-    border: 1px solid #dddddd;
-    padding: 8px;
-    text-align: left;
-  }
-  
-  table th {
-    background-color: #004977;
-    color: #fff;
-  }
-</style>
 <br>
 <br>
 <br>
 <br>
-<br>
-<table border="1" >
-  <thead>
-    <tr>
-    <th>TransactionUUID</th>
-      <th>Amount</th>
-      <th>Card</th>
-      <th>Day</th>
-      <th>MCC</th>
-      <th>Month</th>
-      <th>Time</th>
-      <th>Year</th>
-      <th>Zip</th>
-      <th>Latitude</th>
-      <th>Longitude</th>
-      <!-- Add more headers as needed -->
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let transaction of transactions">
-      <td>{{ transaction.TransactionUUID }}</td>
-      <td>{{ transaction.Amount }}</td>
-      <td>{{ transaction.Card }}</td>
-      <td>{{ transaction.Day }}</td>
-      <td>{{ transaction.MCC }}</td>
-      <td>{{ transaction.Month }}</td>
-      <td>{{ transaction.Time }}</td>
-      <td>{{ transaction.Year }}</td>
-      <td>{{ transaction.Zip }}</td>
-      <td>{{ transaction.Latitude }}</td>
-      <td>{{ transaction.Longitude }}</td>
-      <!-- Add more data cells as needed -->
-    </tr>
-  </tbody>
-</table>
+<div class="container">
+    <!-- Month and Year Filters -->
+    <div class="filters">
+      <label for="monthSelect">Month </label>
+      <select id="monthSelect" [(ngModel)]="selectedMonth" (change)="onMonthChange(selectedMonth)" name="month">
+        <option *ngFor="let month of months" [value]="month">{{ month }}</option>
+      </select>
+    
+      <label for="yearSelect">Year </label>
+      <select id="yearSelect" [(ngModel)]="selectedYear" (change)="onYearChange(selectedYear)" name="year">
+        <option *ngFor="let year of years" [value]="year">{{ year }}</option>
+      </select>
+    </div>
+
+  <table border="1" >
+    <thead>
+      <tr>
+        <th>Merchant Data</th>
+        <th>Amount</th>
+        <th>Card</th>
+        <th>Day</th>
+        <th>Month</th>
+        <th>Time</th>
+        <th>Year</th>
+        <th>Zip</th>
+        <!-- Add more headers as needed -->
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let transaction of transactions">
+        <td>{{ transaction['Merchant Data'] }}</td>
+        <td>${{ transaction.Amount }}</td>
+        <td>{{ transaction.Card }}</td>
+        <td>{{ transaction.Day }}</td>
+        <td>{{ transaction.Month }}</td>
+        <td>{{ transaction.Time }}</td>
+        <td>{{ transaction.Year }}</td>
+        <td>{{ transaction.Zip }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

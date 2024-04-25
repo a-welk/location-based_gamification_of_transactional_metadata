@@ -7,6 +7,8 @@
   <div class="navItems">
     <a *ngIf="(isLoggedIn$ | async)" routerLink="/dashboard">Dashboard</a>
     <a *ngIf="(isLoggedIn$ | async)" routerLink="/leaderboard">Leaderboard</a>
+    <a *ngIf="(isLoggedIn$ | async)" routerLink="/transactions">Transactions</a>
+    <a *ngIf="(isLoggedIn$ | async)" routerLink="/categories">Catagories</a>
     <a *ngIf="(isLoggedIn$ | async)" (click)="logout()" routerLink="/home">Log Out</a>
     <a *ngIf="!(isLoggedIn$ | async)" (click)="openLoginDialog()" class="links">Login</a>
     <a *ngIf="!(isLoggedIn$ | async)" (click)="openSignupDialog()" class="links">Sign up</a>

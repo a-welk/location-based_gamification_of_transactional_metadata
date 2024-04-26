@@ -44,6 +44,6 @@ Status Report Template: https://github.com/VCU-CS-Capstone/0000---Capstone-Templ
 | Week 11 Status Report |work on basing leaderboard on logged in user and not zipcode|modified leaderboard function to retrieve leaderboard of a given userID's zipcode|more angular errors, onboarding|
 | Week 12 Status Report |implement user autheticated leaderboard|leaderboard is styled like the rest of the app|onboarding is STILL not done|
 | Week 13 Status Report |continue building web app|leaderboard is now based on logged in user and does not show named of other users in zipcode|ONBOARDING|
-| Week 14 Status Report | | | |
-| Week 15 Status Report | | | |
-| Week 16 Status Report | | | |
+| Week 14 Status Report |Create dashboard page for when user logs in|Onboarding HTML finally done|Hydration errors|
+| Week 15 Status Report |Finish up dashboard, make a categorical leaderboard for user spending|created a curated zipcode with multiple users in it with transactions in 2024 and budget data| |
+| Week 16 Status Report |Finish up web app|Core components almost done|Not complete|

@@ -21,7 +21,7 @@ h3{
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 7.5vh;
+    height: 2vh; 
 }
 
 .btn-custom{
@@ -42,7 +42,7 @@ h3{
 }
 
 #chart1{
-    height: 70%;
+    height: 20%;
 }
 
 .container-charts{
@@ -76,12 +76,4 @@ h3{
 p{
     font-size: 20px;
     margin-top: 10px;
-}
-
-.option:hover{
-  cursor: pointer;
-}
-
-.option.active {
-  border: 2px solid black;
 }

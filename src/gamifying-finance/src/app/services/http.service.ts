@@ -21,12 +21,24 @@ export class HttpService {
   }
 
   leaderboard(token: string): Observable<any> {
-    const leaderboardUrl = this.apiUrl +'/leaderboard'; 
+    const leaderboardUrl = this.apiUrl +'/leaderboard';
     return this.http.post(leaderboardUrl,  {token});
   }
 
   monthly_leaderboard(token: string, selectedMonth: any, selectedYear: any): Observable<any> {
-    const leaderboardUrl = this.apiUrl +'/monthly_leaderboard'; 
+    const leaderboardUrl = this.apiUrl +'/monthly_leaderboard';
     return this.http.post(leaderboardUrl,  {token, selectedMonth, selectedYear});
   }
+
+  get_monthly_transactions() {
+    const url = this.apiUrl +'/get_monthly_transactions';
+    return this.http.get(url);
+  }
+
+  update_budget_option(budgetChoice: any) {
+    const url = this.apiUrl +'/update_budget_option';
+    return this.http.post(url, { budgetChoice })
+  }
+
+
 }

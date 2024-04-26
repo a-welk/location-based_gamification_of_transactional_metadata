@@ -750,6 +750,7 @@ def update_user_budget_option():
         }
     )
 
+
 json_data = json.load(open('zip_summary.json'))
 @app.route('/getAverages', methods=['GET'])
 def getAverages():
@@ -766,6 +767,7 @@ def getAverages():
     else:
         returnData = {'error': 'No data for this date', 'status': 404}
     return returnData                              
+
         
         
 def main():

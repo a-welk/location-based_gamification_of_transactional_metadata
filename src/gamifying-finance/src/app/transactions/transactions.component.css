@@ -1,3 +1,7 @@
+.PageTitle{
+  margin-top: 10px;
+  text-align: center;
+}
 table {
     width: 100%;
     border-collapse: collapse;
@@ -16,15 +20,34 @@ table {
   }
 
 .filters{
-    position: relative;
-    float: right;
-    margin-bottom: 20px;
-    margin-right: 20px;
+    display: flex;
+    justify-content: space-between;
+    
 }
-.filters label{
-    padding: 5px;
+.filters .search input{
+  background-color: #D9D9D9;
+  border: 0px;
+  padding: 5px;
+}
+.selections{
+  position: relative;
+  float: right;
+  margin-bottom: 20px;
+}
+
+.selections select{
+  background-color: #D9D9D9;
+  border: 0px;
+  padding: 5px;
 }
 
 .container{
     width: 100%;
+}
+
+.loadMore{
+    margin: 10px;
+    text-align: center;
+    color: rgba(13, 110, 253, 1);
+    text-decoration: none;
 }

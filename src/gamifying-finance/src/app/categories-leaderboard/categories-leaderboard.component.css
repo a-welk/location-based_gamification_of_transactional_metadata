@@ -13,10 +13,32 @@
 .filters label{
     padding: 5px;
 }
+
+.selections{
+position: relative;
+float: right;
+margin-bottom: 20px;
+}
+
+.selections select{
+background-color: #D9D9D9;
+border: 0px;
+padding: 5px;
+}
 thead{
     background: black;
     font-size: larger;
 
+}
+table th {
+    background-color: #004977;
+    color: #fff;
+}
+table th,
+table td {
+border: 1px solid #dddddd;
+padding: 8px;
+text-align: left;
 }
 .expenseCategory{
     font-weight: bold;

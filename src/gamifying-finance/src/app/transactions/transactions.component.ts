@@ -1,69 +1,94 @@
-
-import { OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { TransactionService } from '../services/transactions.service';
-import { Component } from '@angular/core';
-import { NgForOf } from '@angular/common'; // Import NgFor directive
+import { NgForOf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+
+type MonthMap = {
+  [key: number]: string;
+};
+
+type ReverseMonthMap = {
+  [key: string]: string;
+};
 
 @Component({
   selector: 'app-transactions-component',
   templateUrl: './transactions.component.html',
   styleUrls: ['./transactions.component.css'],
   standalone: true,
-  imports: [NgForOf, FormsModule], // Include NgForOf in the imports array
+  imports: [NgForOf, FormsModule],
 })
+
+
 
 export class TransactionsComponent implements OnInit {
   transactions: any[] = [];
-  selectedMonth: string = "";
-  selectedYear: string = "";
-  months: string[] = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
-  years: string[] = ['2021', '2022', '2023', '2024', '2025'];
+  filteredTransactions: any[] = [];
+  searchTerm: string = '';
+  public selectedMonth: string = this.getCurrentMonth();
+  public selectedYear: string = new Date().getFullYear().toString();
+  public months: string[] = this.getMonthsArray();
+  public years: string[] = this.getYearsArray();
 
-  constructor(private transactionService: TransactionService) { }
+  constructor(private transactionService: TransactionService) {}
 
   ngOnInit(): void {
-    // Initialize the years dynamically or statically as needed
-    this.years = this.generateYears();
-
-    // Optionally, auto-select the current month and year
-    const currentDate = new Date();
-    this.selectedMonth = this.months[currentDate.getMonth()];
-    this.selectedYear = currentDate.getFullYear().toString();
-
-    // Fetch data based on the selected month and year
-    this.fetchData();
+    this.fetchData(this.reverseMonth(this.selectedMonth), this.selectedYear);
   }
 
-  fetchData() {
-    this.transactionService.fetchData(this.selectedMonth, this.selectedYear).subscribe((data: any[]) => {
-      console.log('Data:', data);
-      this.transactions = data.map((transaction: any) => {
-        const { merchantUUID, UserUUID, UseChip, 'Is Fraud?': isFraud, ...rest } = transaction;
-        console.log('Transaction data:', rest);
-        return rest;
-      });
+
+  fetchData(month: string, year: string,) {
+    this.transactionService.fetchData(month, year).subscribe((data: any[]) => {
+      this.transactions = data;
+      this.filteredTransactions = data;
+      this.filterTransactions(); // Apply initial filter (if any)
     });
   }
 
-  onMonthChange(newMonth: string) {
-    this.selectedMonth = newMonth;
-    this.fetchData();
+  getCurrentMonth(): string {
+    const currentMonthIndex: number = new Date().getMonth() + 1;
+    const month_json: MonthMap = {
+      1: 'January', 2: 'February', 3: 'March', 4: 'April',
+      5: 'May', 6: 'June', 7: 'July', 8: 'August',
+      9: 'September', 10: 'October', 11: 'November', 12: 'December'
+    };
+    return month_json[currentMonthIndex];
+  }
+  reverseMonth(month : string): string {
+    const reverse_month_json: ReverseMonthMap = { "January": "01", "February": "02", "March": "03", "April": "04", "May": "05", "June": "06", "July": "07", "August": "08", "September": "09", "October": "10", "November": "11", "December": "12" };
+    return reverse_month_json[month];
   }
 
-  onYearChange(newYear: string) {
+  getMonthsArray(): string[] {
+    return ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  }
+  
+  getYearsArray(): string[] {
+    let currentYear = new Date().getFullYear();
+    return Array.from({ length: 5 }, (_, i) => (currentYear - i).toString());
+  }
+
+  onMonthChange(newMonth: string): void {
+    this.selectedMonth = newMonth; // Maintain the month name for display purposes
+    const monthValue = this.reverseMonth(newMonth); // Get the numeric string representation
+    this.fetchData(monthValue, this.selectedYear); // Fetch data using the numeric value
+  }
+
+  onYearChange(newYear: string): void {
     this.selectedYear = newYear;
-    this.fetchData();
+    this.fetchData(this.selectedMonth, this.selectedYear);
   }
 
-  // Helper function to generate year range for selection
-  private generateYears(): string[] {
-    const currentYear = new Date().getFullYear();
-    const startYear = currentYear - 10; // for the past 10 years
-    const years = [];
-    for (let year = startYear; year <= currentYear; year++) {
-      years.push(year.toString());
+  filterTransactions(): void {
+    if (!this.searchTerm) {
+      this.filteredTransactions = this.transactions;
+    } else {
+      this.filteredTransactions = this.transactions.filter(transaction =>
+        Object.values(transaction).some(val =>
+          (val as string).toString().toLowerCase().includes(this.searchTerm.toLowerCase())
+        )
+      );
     }
-    return years;
   }
+
 }

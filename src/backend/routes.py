@@ -110,6 +110,8 @@ def onboard_check(user_id):
 
 # Load mcc_codes_data.json
 mcc_data = json.load(open('mcc_codes_data.json'))
+mcc_business_names = json.load(open('mcc_business_names.json'))
+months = {"1" : "January", "2" : "February", "3" : "March", "4" : "April", "5" : "May", "6" : "June", "7" : "July", "8" : "August", "9" : "September", "10" : "October", "11" : "November", "12" : "December"}
 @app.route('/getTransactions', methods=['GET'])
 def get_user_transaction():
     # Initialize a DynamoDB resource
@@ -135,7 +137,7 @@ def get_user_transaction():
             return jsonify({'error': 'Token for invalid user ', 'status': 401}), 401
     else:
         return jsonify({'error': 'Token not provided', 'status': 401}), 401
-
+    print(user_uuid)
     # Initialize the tables
     transactions_table = dynamodb.Table(transactions_table_name)
     
@@ -147,6 +149,22 @@ def get_user_transaction():
         KeyConditionExpression=boto3.dynamodb.conditions.Key('UserUUID').eq(user_uuid)
     )
     transactions = response['Items'][:50]  # Limiting to first 50 transactions for demonstration
+    # Sort the transactions by month, day, and time descending
+    # Sort the transactions by Year, Month, Day, and Time descending
+    # Convert Year, Month, Day, and Time to integers before sorting in descending order
+    # Ensure all components are converted to integers for sorting
+    transactions = sorted(
+        transactions,
+        key=lambda x: (
+            int(x['Year']),                       # Convert Year to integer
+            int(x['Month']),                      # Convert Month to integer
+            int(x['Day']),                        # Convert Day to integer
+            int(x['Time'].replace(':', ''))       # Convert Time 'HH:MM:SS' to an integer like 133319
+        ),
+        reverse=True  # Sorting in descending order
+    )
+
+
     for transaction in transactions:
         mcc = transaction['MCC']
         mcc_data_entry = mcc_data.get(str(mcc))
@@ -163,8 +181,8 @@ def get_user_transaction():
             transaction['Time'] = f'{hour}:{minute} {period}'
         if mcc_data_entry:
             transaction['Merchant Data'] = mcc_data_entry
-        print(f"Processing transaction {transactions.index(transaction) + 1}/{len(transactions)}\r", end="")
-    print(transactions)
+        transaction['Merchant Name'] = mcc_business_names.get(str(mcc), 'Unknown')[random.randint(0, 2)]
+        transaction['Transaction Date'] = f"{months[transaction['Month']]} {transaction['Day']}"
     return jsonify(transactions)        
 
 
@@ -744,7 +762,7 @@ def getAverages():
     if zipcode_data.get(date, None):
         date_data = zipcode_data[date]
         for key in date_data.keys():
-            returnData[key] = {'User Average': (date_data[key] * random.uniform(0.8, 1.2)), 'Community Average': date_data[key], 'User Target': (date_data[key] * random.uniform(0.8, 1.2)), 'Community Target': date_data[key]}
+            returnData[key] = {'User Average': (date_data[key] * random.uniform(0.8, 1.2)), 'Community Average': date_data[key], 'User Target': round((date_data[key] * random.uniform(0.8, 1.2)), 0), 'Community Target': (date_data[key] * random.uniform(0.8, 1.2))}
     else:
         returnData = {'error': 'No data for this date', 'status': 404}
     return returnData                              

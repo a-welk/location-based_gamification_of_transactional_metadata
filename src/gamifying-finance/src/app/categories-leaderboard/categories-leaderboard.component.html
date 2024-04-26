@@ -6,16 +6,18 @@
   
   <!-- Month and Year Filters -->
   <div class="filters">
-    <label for="monthSelect">Month </label>
-    <select id="monthSelect" [(ngModel)]="selectedMonth" (change)="onMonthChange(selectedMonth)" name="month">
-      <option *ngFor="let month of months" [value]="month">{{ month }}</option>
-    </select>
-  
-    <label for="yearSelect">Year </label>
-    <select id="yearSelect" [(ngModel)]="selectedYear" (change)="onYearChange(selectedYear)" name="year">
-      <option *ngFor="let year of years" [value]="year">{{ year }}</option>
-    </select>
-  </div>
+
+    <div class="selections">
+      <select id="monthSelect" [(ngModel)]="selectedMonth" (change)="onMonthChange(selectedMonth)" name="month">
+        <option *ngFor="let month of months" [value]="month">{{ month }}</option>
+      </select>        
+      &nbsp;
+      &nbsp;
+      <select id="yearSelect" [(ngModel)]="selectedYear" (change)="onYearChange(selectedYear)" name="year">
+        <option *ngFor="let year of years" [value]="year">{{ year }}</option>
+      </select>
+    </div> 
+  </div> 
   
 
   <!-- Categories Data Table -->

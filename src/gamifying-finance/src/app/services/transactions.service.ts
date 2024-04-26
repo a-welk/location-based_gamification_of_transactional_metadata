@@ -16,7 +16,6 @@ export class TransactionService {
     const token = this.authService.getToken();
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
     const params = new HttpParams().set('month', month).set('year', year);
-  
     return this.http.get(this.apiUrl, { headers, params }).pipe(
       catchError((error) => {
         if (error.status === 401) {

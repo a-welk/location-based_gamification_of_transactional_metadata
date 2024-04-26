@@ -2,45 +2,55 @@
 <br>
 <br>
 <br>
+<h1 class="PageTitle">Your Transactions</h1>
 <div class="container">
+    
     <!-- Month and Year Filters -->
     <div class="filters">
-      <label for="monthSelect">Month </label>
-      <select id="monthSelect" [(ngModel)]="selectedMonth" (change)="onMonthChange(selectedMonth)" name="month">
-        <option *ngFor="let month of months" [value]="month">{{ month }}</option>
-      </select>
-    
-      <label for="yearSelect">Year </label>
-      <select id="yearSelect" [(ngModel)]="selectedYear" (change)="onYearChange(selectedYear)" name="year">
-        <option *ngFor="let year of years" [value]="year">{{ year }}</option>
-      </select>
+      <div class="search">
+        <input placeholder="Search" type="text" id="searchInput" [(ngModel)]="searchTerm" (keyup)="filterTransactions()">
+      </div>
+
+      <div class="selections">
+        <select id="monthSelect" [(ngModel)]="selectedMonth" (change)="onMonthChange(selectedMonth)" name="month">
+          <option *ngFor="let month of months" [value]="month">{{ month }}</option>
+        </select>        
+        &nbsp;
+        &nbsp;
+        <select id="yearSelect" [(ngModel)]="selectedYear" (change)="onYearChange(selectedYear)" name="year">
+          <option *ngFor="let year of years" [value]="year">{{ year }}</option>
+        </select>
+      </div>         
     </div>
 
   <table border="1" >
     <thead>
       <tr>
-        <th>Merchant Data</th>
+        <th>Time</th>
+        <th>Date</th>
+        <th>Merchant</th>
+        <th>Category</th>
         <th>Amount</th>
         <th>Card</th>
-        <th>Day</th>
-        <th>Month</th>
-        <th>Time</th>
         <th>Year</th>
         <th>Zip</th>
         <!-- Add more headers as needed -->
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let transaction of transactions">
+      <tr *ngFor="let transaction of filteredTransactions">
+        <td>{{ transaction.Time }}</td>
+        <td>{{ transaction['Transaction Date'] }}</td>
+        <td>{{ transaction['Merchant Name'] }}</td>
         <td>{{ transaction['Merchant Data'] }}</td>
         <td>${{ transaction.Amount }}</td>
-        <td>{{ transaction.Card }}</td>
-        <td>{{ transaction.Day }}</td>
         <td>{{ transaction.Month }}</td>
-        <td>{{ transaction.Time }}</td>
         <td>{{ transaction.Year }}</td>
         <td>{{ transaction.Zip }}</td>
-      </tr>
+      </tr>      
     </tbody>
   </table>
+</div>
+<div class="loadMore">
+  <a href="/transactions">Load More</a>
 </div>

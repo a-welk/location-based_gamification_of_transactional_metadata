@@ -1,29 +1,29 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { catchError, Observable } from 'rxjs';
-import { AuthService } from './auth.service'; // Import the AuthService class
+import { AuthService } from './auth.service';
+import { Router } from '@angular/router'; // Import the Router
 
 @Injectable({
   providedIn: 'root'
 })
 export class TransactionService {
-
   private apiUrl = 'http://127.0.0.1:5000/getTransactions';
 
-  constructor(private http: HttpClient, private authService: AuthService) { } // Add authService parameter
+  constructor(private http: HttpClient, private authService: AuthService, private router: Router) {} // Add router to the constructor
 
-  fetchData(): Observable<any> {
+  fetchData(month: string, year: string): Observable<any> {
     const token = this.authService.getToken();
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    
-    return this.http.get(this.apiUrl, { headers }).pipe(
+    const params = new HttpParams().set('month', month).set('year', year);
+    return this.http.get(this.apiUrl, { headers, params }).pipe(
       catchError((error) => {
         if (error.status === 401) {
-          // Redirect user to '/'
-          window.location.href = '/';
+          // Use the Router to navigate
+          this.router.navigate(['/']); // Redirect user to '/'
         }
         throw error;
       })
     );
-  }
+  }  
 }

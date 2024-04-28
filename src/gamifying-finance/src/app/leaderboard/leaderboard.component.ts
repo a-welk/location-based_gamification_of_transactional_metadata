@@ -38,7 +38,7 @@ export class LeaderboardComponent {
     { label: 'December', value: 12 }
   ];
 
-  years = Array.from({ length: 2023 - 2000 + 1 }, (_, index) => 2000 + index);
+  years = Array.from({ length: 2024 - 2000 + 1 }, (_, index) => 2000 + index);
 
   constructor(private httpservice: HttpService, private authservice: AuthService) {}
 

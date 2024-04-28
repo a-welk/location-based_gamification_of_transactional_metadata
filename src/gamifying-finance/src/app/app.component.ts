@@ -39,7 +39,7 @@ export class AppComponent {
   ngOnInit() {
     const s = this.renderer2.createElement('script');
     s.type = 'text/javascript';
-    s.src = `https://maps.googleapis.com/maps/api/js?key=INSERT_KEY_HERE`;
+    s.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyBnYqWHDn4WsoFOg46o7TW0IM2-a1GXxZ0`;
     s.defer = true;
     s.async = true;
     this.renderer2.appendChild(this.document.head, s);

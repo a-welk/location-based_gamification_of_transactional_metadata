@@ -1,7 +1,13 @@
-# *System for Real-Time Event Transformation and Routing Description*
+# *Location-based Gamification of Financial Transactions using Metadata*
 ## *Capital One*
 ## *Short Project Description*
-In today’s technical landscape, increasingly event-driven architectures (EDA) are being used to create systems built from decoupled software platforms. These systems often include a variety of software components, many of which may be built internally by a company like Capital One, or incorporate vendor products. Although these components may all use events as a common way to share information, they also follow different formats, and different levels of detail, and without careful consideration can result in one event-driven component inappropriately influencing how other components interact with data. We challenge the VCU student engineering team to build a real-time AWS cloud-based system for processing events that provide the ability to transform, aggregate, and decompose events that can be used to translate vendor-specific event schemas to match a common enterprise event schema library. This will likely require becoming experts on AWS services like DynamoDb, Lambda, EventBridge, Step Functions, and X-Ray.
+In today's digital era, managing personal finances can be daunting for many individuals due to the complexity and sheer volume of transactions. To address this, this project aims to enhance financial literacy and streamline transaction interpretation by integrating location-based services and gamification principles into a user-friendly web application.
+
+The proposed system offers users a platform to effortlessly interpret and manage their financial transactions by leveraging metadata associated with each transaction. Through intuitive visualization and gamified elements, users can gain insights into their spending patterns, track expenses, and improve their financial decision-making skills. The incorporation of location-based services enables contextual understanding of transactions, facilitating personalized budgeting options tailored to individual preferences and lifestyle.
+
+Key features of the web application include customizable budgeting tools, seamless processing of monthly expenses, and interactive gamification elements designed to incentivize financial awareness and responsible spending habits. By empowering users with actionable insights and simplified transaction management, the project aims to contribute to the advancement of financial literacy and promote a healthier approach to personal finance management.
+
+Overall, the "Location-based Gamification of Financial Transactions using Metadata" project offers a promising solution to the complexities associated with managing personal finances, providing users with a valuable tool to navigate their financial landscape with confidence and ease.
 
 
 | Folder | Description |

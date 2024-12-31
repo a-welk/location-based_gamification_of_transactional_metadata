@@ -4,8 +4,8 @@ import boto3
 def getHighestTransactionID():
     # Initialize a DynamoDB client
     dynamodb = boto3.resource('dynamodb',
-                          aws_access_key_id="AKIA42KZIHZE3NIJXCJ2", #insert YOUR aws access key here
-                          aws_secret_access_key="ULV7X90uwRxEu72rf4xDCoXmZXltARqt7TJ9zRkx", #insert YOUR aws sec
+                          aws_access_key_id="", #insert YOUR aws access key here
+                          aws_secret_access_key="", #insert YOUR aws sec
                           region_name="us-east-1")
     table = dynamodb.Table('Transactions')
 

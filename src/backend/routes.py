@@ -20,8 +20,8 @@ app = Flask(__name__)
 CORS(app)
 app.config['SECRET_KEY'] = config('SECRET_KEY')
 dynamodb = boto3.resource('dynamodb',
-                          aws_access_key_id="AKIA42KZIHZE3NIJXCJ2", #insert YOUR aws access key here
-                          aws_secret_access_key="ULV7X90uwRxEu72rf4xDCoXmZXltARqt7TJ9zRkx", #insert YOUR aws sec
+                          aws_access_key_id="", #insert YOUR aws access key here
+                          aws_secret_access_key="", #insert YOUR aws sec
                           region_name="us-east-1")
 # Global Transaction table variables
 transactionID = [] 
@@ -116,8 +116,8 @@ months = {"1" : "January", "2" : "February", "3" : "March", "4" : "April", "5" :
 def get_user_transaction():
     # Initialize a DynamoDB resource
     dynamodb = boto3.resource('dynamodb',
-                              aws_access_key_id='AKIA42KZIHZE3NIJXCJ2',
-                              aws_secret_access_key='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',
+                              aws_access_key_id='',
+                              aws_secret_access_key='',
                               region_name="us-east-1")
     
     # Specify your Transaction and Merchants table names
